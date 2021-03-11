@@ -1,0 +1,19 @@
+{
+  "game": [
+    "common/basic.lua",
+    "common/common-ui.lua",
+    "common/keyboard.lua",
+    "game/common.lua",
+    "game/entityBlockList.lua",
+    "game/game.lua"
+  ],
+  "ui": [
+    "common/basic.lua",
+    "common/common-ui.lua",
+    "common/keyboard.lua",
+    "ui/image.lua",
+    "ui/uiGraphics.lua",
+    "ui/song.lua",
+    "ui/ui.lua"
+  ]
+}
