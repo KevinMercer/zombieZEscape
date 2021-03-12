@@ -1,4 +1,4 @@
-layerTable = {}
+layerTable = {} --图层表
 
 Class = (function()
 

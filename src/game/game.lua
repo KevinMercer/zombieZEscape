@@ -5,6 +5,36 @@ Game.Rule.enemyfire = true
 Game.Rule.friendlyfire = false
 Game.Rule.breakable = false
 
+Timer = { valid = false, timer = 0 }
+
+function Timer:Init()
+    self.valid = false
+    self.timer = 0
+end
+
+function Timer:IsValid()
+    return self.valid
+end
+
+function Timer:Start(duration)
+    self.valid = true
+    self.timer = Game.GetTime() + duration
+end
+
+function Timer:IsElapsed()
+    if self.valid == false then
+        return false
+    end
+
+    return self.timer < Game.GetTime()
+end
+
+function Timer:new(o)
+    o = o or {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
 
 
 -- 同步变量
@@ -37,187 +67,7 @@ theHumanSkillCDTime = Game.GetTime() --人类技能在回合开始前不能使�
 hostShow = false
 
 
---二代僵尸技能总表
-zombieSkillTableEx = {
-    {
-        "hpPlus",
-        10,
-        "恢复强化：一段时间没有受到伤害后开始回复生命值。",
-        SignalToUI.hpPlusSkillGet,
-        1
-    },
-    {
-        "rehydration",
-        10,
-        "生命补液：拥有更高的生命值上限。",
-        SignalToUI.rehydrationSkillGet,
-        -1
-    },
-    {
-        "ironChest",
-        15,
-        "钢铁铠甲：降低受到的非致命打击伤害。",
-        SignalToUI.ironChestSkillGet,
-        1
-    },
-    {
-        "deflectArmor",
-        5,
-        "倾斜装甲：装配光滑并且带有一定倾斜角度的装甲使得你有概率反弹子弹，免伤并且使攻击者受到伤害惩罚。",
-        SignalToUI.deflectArmorSkillGet,
-        -1
-    },
-    {
-        "ironHelmet",
-        5,
-        "钢铁头盔：降低受到的致命打击伤害。",
-        SignalToUI.ironHelmetSkillGet,
-        1
-    },
-    {
-        "sufferMemory",
-        5,
-        "痛苦记忆：极大幅度降低上次击杀你的玩家对你造成的伤害。",
-        SignalToUI.sufferMemorySkillGet,
-        -1
-    },
-    {
-        "ironClaw",
-        10,
-        "合金利爪：对英雄的伤害翻倍。",
-        SignalToUI.ironClawSkillGet,
-        1
-    },
-    {
-        "touchInfect",
-        1,
-        "接触感染：与你发生身体碰撞的人类玩家会立刻死亡并感染，但这并不会算作你的击杀。",
-        SignalToUI.touchInfectSkillGet,
-        -1
-    },
-    {
-        "evolution",
-        5,
-        "进化论：受到伤害时获得的经验值更多，且你被赋予成为英雄僵尸的可能性。",
-        SignalToUI.evolutionSkillGet,
-        1
-    },
-    {
-        "adaptability",
-        4,
-        "适应力：可以随时切换僵尸模型。",
-        SignalToUI.adaptabilitySkillGet,
-        -1
-    },
-    {
-        "mammoth",
-        15,
-        "猛犸：移动速度较低时降低受到的伤害。",
-        SignalToUI.mammothSkillGet,
-        0
-    },
-    {
-        "repair",
-        15,
-        "组织再生：受到攻击时概率恢复护甲值。",
-        SignalToUI.repairSkillGet,
-        0
-    }
-}
---二代人类技能总表
-humanSkillTableEx = {
-    {
-        "sneakReload",
-        5,
-        "透明换弹：装弹过程中保持隐身。",
-        SignalToUI.sneakReloadSkillGet,
-        1
-    },
-    {
-        "quickReload",
-        15,
-        "高速填装：换弹过程中移动速度增加。",
-        SignalToUI.quickReloadSkillGet,
-        -1
-    },
-    {
-        "backClip",
-        15,
-        "备弹补充：使用常规弹夹的武器拥有无限备弹。",
-        SignalToUI.backClipSkillGet,
-        1
-    },
-    {
-        "recycle",
-        5,
-        "弹夹回收：使用特殊子弹的武器有概率回收子弹。",
-        SignalToUI.recycleSkillGet,
-        -1
-    },
-    {
-        "kangaroo",
-        8,
-        "袋鼠：拥有更出色的重力参数。",
-        SignalToUI.kangarooSkillGet,
-        1
-    },
-    {
-        "cheetah",
-        8,
-        "猎豹：拥有更出色的移动速度。",
-        SignalToUI.cheetahSkillGet,
-        -1
-    },
-    {
-        "assault",
-        10,
-        "正面突击：突击步枪拥有更高的伤害能力，霰弹枪拥有更强的击退能力。",
-        SignalToUI.assaultSkillGet,
-        1
-    },
-    {
-        "forward",
-        5,
-        "冲锋推进：冲锋枪拥有更快的移动速度，轻机枪拥有更好的定身能力。",
-        SignalToUI.forwardSkillGet,
-        -1
-    },
-    {
-        "sprint",
-        5,
-        "极速飞奔：5键激活，一段时间内提高移动速度。",
-        SignalToUI.sprintSkillGet,
-        1
-    },
-    {
-        "critical",
-        5,
-        "致命打击：6键激活，一段时间内造成四倍伤害。",
-        SignalToUI.criticalSkillGet,
-        -1
-    },
-    {
-        "hero",
-        2,
-        "英雄出现：有概率被选为英雄。",
-        SignalToUI.heroSkillGet,
-        0
-    },
-    {
-        "edge",
-        8,
-        "利刃：近战武器造成额外伤害。",
-        SignalToUI.edgeSkillGet,
-        0
-    },
-    {
-        "shooter",
-        9,
-        "神枪手：当你的背包里拥有狙击步枪时，你不需要开镜也能获得一个准心。",
-        SignalToUI.shooterSkillGet,
-        0
-    }
-}
+
 
 --玩家渲染方式
 playerRenderFx = {
@@ -518,7 +368,9 @@ function Game.Rule:OnPlayerConnect(player)
     pUser.lastRecordPosition = nil
     pUser.detectionPosition = nil
     pUser.hiddenRespawnPosition = nil
-    pUser.hostZombieRespawnPosition = hostRespawnEntityBlock.position
+    if hostRespawnEntityBlock then
+        pUser.hostZombieRespawnPosition = hostRespawnEntityBlock.position
+    end
     pUser.sprintDurationTime = gameTime
     pUser.criticalDurationTime = gameTime
     pUser.sprintCoolDownTime = theHumanSkillCDTime
@@ -1038,24 +890,25 @@ function escapeSuccess(call)
 end
 
 --僵尸触碰范围逃脱方块则逃脱失败
-function escapeEntityBlock:OnTouch(player)
-    if player ~= nil then
-        local pUser = player.user
-        local exitGame = false
-        if pUser.zombie == true then
-            if state == STATE.PLAYING then
-                if (scoreHuman.value + scoreZombie.value) >= scoreGoal.value or totalGameTimer:IsElapsed() then
-                    exitGame = true
+if escapeEntityBlock then
+    function escapeEntityBlock:OnTouch(player)
+        if player ~= nil then
+            local pUser = player.user
+            local exitGame = false
+            if pUser.zombie == true then
+                if state == STATE.PLAYING then
+                    if (scoreHuman.value + scoreZombie.value) >= scoreGoal.value or totalGameTimer:IsElapsed() then
+                        exitGame = true
+                    end
+                    scoreZombie.value = scoreZombie.value + 1
+                    Game.Rule:Win(Game.TEAM.TR, exitGame)
+                    state = STATE.END
+                    sendRoundEndSignal(false)
                 end
-                scoreZombie.value = scoreZombie.value + 1
-                Game.Rule:Win(Game.TEAM.TR, exitGame)
-                state = STATE.END
-                sendRoundEndSignal(false)
             end
         end
     end
 end
-
 
 --检测回合胜利标准
 function checkWinCondition(time)
@@ -1152,12 +1005,12 @@ end
 function dropGun(call)
 
     if call then
-        if totalGunsList ~= nil then
+        if validateGunsList ~= nil then
             local theCaller = Game.GetScriptCaller()
             if theCaller ~= nil then
-                local weaponMaxNumber = ZCLOGLength(totalGunsList)
+                local weaponMaxNumber = ZCLOGLength(validateGunsList)
                 local weaponNumber = math.random(1, weaponMaxNumber)
-                local theGun = Game.Weapon:CreateAndDrop(totalGunsList[weaponNumber], theCaller.position)
+                local theGun = Game.Weapon:CreateAndDrop(validateGunsList[weaponNumber], theCaller.position)
                 spWeapon(theGun)
             end
         end
@@ -1648,11 +1501,12 @@ end
 function getSpeed(player)
     local pUser = player.user
     if pUser.zombie == true then
-        if player.velocity.z == 0 then
-            if math.sqrt((player.velocity.x * player.velocity.x) + (player.velocity.y * player.velocity.y)) <= 290 * pUser.speedRate then
-                player.velocity = { x = player.velocity.x * 1.01, y = player.velocity.y * 1.01 }
-            end
+        --if player.velocity.z == 0 then
+        local theSpeedRate = pUser.speedRate
+        if math.sqrt((player.velocity.x * player.velocity.x) + (player.velocity.y * player.velocity.y)) <= 290 * theSpeedRate then
+            player.velocity = { x = player.velocity.x * theSpeedRate, y = player.velocity.y * theSpeedRate }
         end
+        --end
         if player.velocity.z > 200 then
             if pUser.zombieJump == nil or pUser.zombieJump == false then
                 pUser.zombieJump = true
@@ -1752,375 +1606,40 @@ function Game.Rule:OnPlayerSignal(player, signal)
         if signal >= SignalToGame.S_Zombie_Model_Normal and signal <= SignalToGame.S_Zombie_Model_Aksha then
             pUser.hostMenu = false
             local theModelNumber = signal - 20
+            local theZombieTableIndex = theModelNumber - 29
             local hpRate = player.health / player.maxhealth
             local armorRate = player.armor / player.maxarmor
             player.model = theModelNumber
             pUser.zombieExclusiveSkill = player.model
-            local modelSwitch = {
-                [30] = function()
-                    player.maxhealth = 40000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 8000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 1.0
-                    player.knockback = 1.0
-                    player.maxspeed = 1.0
-                    pUser.jumpRate = 1.3
-                    pUser.speedRate = 1.05
-                    pUser.jumpLevel = 1
-                    pUser.resistance = 1.0
-                    pUser.canIcraus = true
-                    player:Signal(SignalToUI.icarusSkillGet)
-                    player:Signal(SignalToUI.indurationSkillGet)
-                    --普通僵尸
-                end,
-                [31] = function()
-                    player.maxhealth = 20000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 4000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 1.0
-                    player.knockback = 2.0
-                    player.maxspeed = 1
-                    pUser.jumpRate = 1.45
-                    pUser.speedRate = 1.1
-                    pUser.jumpLevel = 2
-                    pUser.resistance = 2.0
-                    pUser.canIcraus = false
-                    player:Signal(SignalToUI.doubleJumpSkillGet)
-                    player:Signal(SignalToUI.lurkSkillGet)
-                    --暗影芭比
-                end,
-                [32] = function()
-                    player.maxhealth = 60000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 10000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 0.5
-                    player.knockback = 0.5
-                    player.maxspeed = 1
-                    pUser.jumpRate = 1.2
-                    pUser.speedRate = 1
-                    pUser.jumpLevel = 1
-                    pUser.resistance = 0.5
-                    pUser.canIcraus = true
-                    player:Signal(SignalToUI.icarusSkillGet)
-                    player:Signal(SignalToUI.ghostHandSkillGet)
-                    --憎恶屠夫
-                end,
-                [33] = function()
-                    player.maxhealth = 30000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 6000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 1.0
-                    player.knockback = 0.8
-                    player.maxspeed = 1.0
-                    pUser.jumpRate = 1.33
-                    pUser.speedRate = 1
-                    pUser.jumpLevel = 1
-                    pUser.resistance = 0.8
-                    pUser.canIcraus = true
-                    player:Signal(SignalToUI.icarusSkillGet)
-                    player:Signal(SignalToUI.indurationSkillGet)
-                    --迷雾鬼影
-                end,
-                [34] = function()
-                    player.maxhealth = 30000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 6000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 0.8
-                    player.knockback = 1.5
-                    player.maxspeed = 1.1
-                    pUser.jumpRate = 1.28
-                    pUser.speedRate = 1.05
-                    pUser.jumpLevel = 1
-                    pUser.resistance = 1.3
-                    pUser.canIcraus = true
-                    player:Signal(SignalToUI.icarusSkillGet)
-                    player:Signal(SignalToUI.cureSkillGet)
-                    --巫蛊术尸
-                end,
-                [35] = function()
-                    player.maxhealth = 25000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 6000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 0.8
-                    player.knockback = 0.8
-                    player.maxspeed = 1.15
-                    pUser.jumpRate = 1.29
-                    pUser.speedRate = 1.06
-                    pUser.jumpLevel = 1
-                    pUser.resistance = 1.2
-                    pUser.canIcraus = true
-                    player:Signal(SignalToUI.icarusSkillGet)
-                    player:Signal(SignalToUI.shockSkillGet)
-                    --恶魔之子
-                end,
-                [36] = function()
-                    player.maxhealth = 45000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 8000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 0.8
-                    player.knockback = 1.5
-                    player.maxspeed = 1
-                    pUser.jumpRate = 1.32
-                    pUser.speedRate = 1.04
-                    pUser.jumpLevel = 1
-                    pUser.resistance = 0.9
-                    pUser.canIcraus = true
-                    player:Signal(SignalToUI.icarusSkillGet)
-                    player:Signal(SignalToUI.firmlySkillGet)
-                    --恶魔猎手
-                end,
-                [37] = function()
-                    player.maxhealth = 55000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 8000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 0.8
-                    player.knockback = 1.5
-                    player.maxspeed = 1.0
-                    pUser.jumpRate = 1.27
-                    pUser.speedRate = 1.02
-                    pUser.jumpLevel = 1
-                    pUser.resistance = 0.6
-                    pUser.canIcraus = true
-                    player:Signal(SignalToUI.icarusSkillGet)
-                    player:Signal(SignalToUI.impactSkillGet)
-                    --送葬者
-                end,
-                [38] = function()
-                    player.maxhealth = 25000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 8000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 0.8
-                    player.knockback = 1.2
-                    player.maxspeed = 1.1
-                    pUser.jumpRate = 1.36
-                    pUser.speedRate = 1.06
-                    pUser.jumpLevel = 2
-                    pUser.resistance = 1.5
-                    pUser.canIcraus = false
-                    player:Signal(SignalToUI.doubleJumpSkillGet)
-                    player:Signal(SignalToUI.trapSkillGet)
-                    --嗜血女妖
-                end,
-                [39] = function()
-                    player.maxhealth = 35000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 8000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 0.7
-                    player.knockback = 0.7
-                    player.maxspeed = 1.0
-                    pUser.jumpRate = 1.36
-                    pUser.speedRate = 1.05
-                    pUser.jumpLevel = 1
-                    pUser.resistance = 1.5
-                    pUser.canIcraus = true
-                    player:Signal(SignalToUI.icarusSkillGet)
-                    player:Signal(SignalToUI.destructionSkillGet)
-                    --腐败暴君
-                end,
-                [40] = function()
-                    player.maxhealth = 25000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 4000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 0.8
-                    player.knockback = 1.5
-                    player.maxspeed = 1.1
-                    pUser.jumpRate = 1.4
-                    pUser.speedRate = 1.07
-                    pUser.jumpLevel = 2
-                    pUser.resistance = 1.8
-                    pUser.canIcraus = false
-                    player:Signal(SignalToUI.doubleJumpSkillGet)
-                    player:Signal(SignalToUI.leapSkillGet)
-                    --痛苦女王
-                end,
-                [41] = function()
-                    player.maxhealth = 80000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 8000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 0.8
-                    player.knockback = 0.8
-                    player.maxspeed = 1.0
-                    pUser.jumpRate = 1.3
-                    pUser.speedRate = 1.06
-                    pUser.jumpLevel = 1
-                    pUser.resistance = 0.5
-                    pUser.canIcraus = true
-                    player:Signal(SignalToUI.icarusSkillGet)
-                    player:Signal(SignalToUI.undyingSkillGet)
-                    --暴虐钢骨
-                end,
-                [42] = function()
-                    player.maxhealth = 40000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 4000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 0.5
-                    player.knockback = 1.2
-                    player.maxspeed = 1
-                    pUser.jumpRate = 1.35
-                    pUser.speedRate = 1.08
-                    pUser.jumpLevel = 2
-                    pUser.resistance = 2.0
-                    pUser.canIcraus = false
-                    player:Signal(SignalToUI.doubleJumpSkillGet)
-                    player:Signal(SignalToUI.hiddenSkillGet)
-                    --幻痛夜魔
-                end,
-                [43] = function()
-                    player.maxhealth = 25000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 2000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 0.5
-                    player.knockback = 1.5
-                    player.maxspeed = 1.2
-                    pUser.jumpRate = 1.42
-                    pUser.speedRate = 1.09
-                    pUser.jumpLevel = 2
-                    pUser.resistance = 0.8
-                    pUser.canIcraus = false
-                    player:Signal(SignalToUI.doubleJumpSkillGet)
-                    player:Signal(SignalToUI.leapSkillGet)
-                    --追猎傀儡
-                end,
-                [44] = function()
-                    player.maxhealth = 45000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 5000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 0.7
-                    player.knockback = 1.5
-                    player.maxspeed = 1.1
-                    pUser.jumpRate = 1.35
-                    pUser.speedRate = 1.07
-                    pUser.jumpLevel = 1
-                    pUser.resistance = 1.4
-                    pUser.canIcraus = true
-                    player:Signal(SignalToUI.icarusSkillGet)
-                    player:Signal(SignalToUI.feedbackSkillGet)
-                    --爆弹狂魔
-                end,
-                [45] = function()
-                    player.maxhealth = 30000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 5000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 0.5
-                    player.knockback = 1.6
-                    player.maxspeed = 1.1
-                    pUser.jumpRate = 1.43
-                    pUser.speedRate = 1.09
-                    pUser.jumpLevel = 2
-                    pUser.resistance = 1.5
-                    pUser.canIcraus = false
-                    player:Signal(SignalToUI.doubleJumpSkillGet)
-                    player:Signal(SignalToUI.leapSkillGet)
-                    --断翼恶灵
-                end,
-                [46] = function()
-                    player.maxhealth = 50000
-                    if pUser.rehydration == true then
-                        player.maxhealth = player.maxhealth + 20000
-                    end
-                    player.maxarmor = 10000
-                    player.health = math.floor(player.maxhealth * hpRate)
-                    player.armor = math.floor(player.maxarmor * armorRate)
-                    player.flinch = 0.8
-                    player.knockback = 0.5
-                    player.maxspeed = 1.0
-                    pUser.jumpRate = 1.25
-                    pUser.speedRate = 1.03
-                    pUser.jumpLevel = 1
-                    pUser.resistance = 0.7
-                    pUser.canIcraus = true
-                    player:Signal(SignalToUI.icarusSkillGet)
-                    player:Signal(SignalToUI.feedbackSkillGet)
-                    --赤炎恶鬼
-                end,
-            }
-
-            local modelSwitchFunc = modelSwitch[theModelNumber]
-            if modelSwitchFunc then
-                modelSwitchFunc()
-            else
-                playermaxhealth = 1000
-                playermaxarmor = 1000
-                playerhealth = 1000
-                playerarmor = 1000
-                playerflinch = 1.0
-                playerknockback = 1.0
-                playermaxspeed = 1.0
-                pUserjumpRate = 1.0
-                pUserspeedRate = 1.0
-                pUserjumpLevel = 1
-                pUsercanIcraus = false
+            -- 设置僵尸属性
+            local theZombieData = zombieTable[theZombieTableIndex]
+            if theZombieData == nil then
+                theZombieData = zombieTable[1]
             end
+            player.maxhealth = theZombieData.maxhealth
+            player.maxarmor = theZombieData.maxarmor
+            player.health = math.floor(player.maxhealth * hpRate)
+            player.armor = math.floor(player.maxarmor * armorRate)
+            player.flinch = theZombieData.flinch
+            player.knockback = theZombieData.knockback
+            player.maxspeed = theZombieData.maxspeed
+            player.gravity = theZombieData.gravity
+            pUser.jumpRate = theZombieData.jumpRate
+            pUser.speedRate = theZombieData.speedRate
+            pUser.jumpLevel = theZombieData.jumpLevel
+            pUser.resistance = theZombieData.resistance
+            player:Signal(SignalToUI.infect)
+            player:Signal(theZombieData.skillOneSignal)
+            player:Signal(theZombieData.skillTwoSignal)
+            pUser.zombie = true
             player.team = Game.TEAM.TR
         end
     end
 
     --获得技能
     if signal == SignalToGame.getSkill then
+
+        pUser.adaptability = true
 
         if pUser.currentLevel == nil then
             pUser.currentLevel = 1
@@ -2633,10 +2152,14 @@ function playerGather(call)
             local human = currentRoundHumanPlayerList[i]
             local zombie = currentRoundZombiePlayerList[i]
             if human ~= nil then
-                human.position = humanGatherEntityBlock.position
+                if humanGatherEntityBlock then
+                    human.position = humanGatherEntityBlock.position
+                end
             end
             if zombie ~= nil then
-                zombie.position = hostRespawnEntityBlock.position
+                if hostRespawnEntityBlock then
+                    zombie.position = hostRespawnEntityBlock.position
+                end
             end
         end
     end

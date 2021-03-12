@@ -1,6 +1,9 @@
+--屏幕分辨率
+screen = UI.ScreenSize()
+center = { x = screen.width / 2, y = screen.height / 2 }
+
 --被感染提示
 layerNameInfect = "被感染提示"
-
 --回合准备时间
 READY_TIME = 20
 --是否是首局游戏
@@ -20,9 +23,6 @@ skillDescOccupation = false
 
 
 --总计分同步变量
---屏幕分辨率
-screen = UI.ScreenSize()
-center = { x = screen.width / 2, y = screen.height / 2 }
 --同步变量
 scoreGoal = UI.SyncValue:Create('goal')
 scoreHuman = UI.SyncValue:Create("human")
@@ -1040,6 +1040,7 @@ function UI.Event:OnSignal(signal)
     --僵尸技能获得
     if signal >= SignalToUI.indurationSkillGet and signal <= SignalToUI.destructionSkillGet then
         --76
+        print(signal)
         yourZombieSkillTable[7] = zombieSkillTableToShow[signal - 76]
         drawSkillImageFunc(youAreZombie)
     end
