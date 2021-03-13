@@ -1,2 +1,2 @@
 # zombieZEscape
-cso-creator-lua-script
+cso studio mode zombie Z escape lua script
