@@ -19,6 +19,15 @@ showSkillImageBox = true
 --技能显示是否被占用
 skillDescOccupation = false
 
+--是否持续按下Space
+spaceHolding = false
+holdingTime = nil
+--技能栏键盘
+--实例化一个按键监听器
+local keyboard = Keyboard();
+--启用按键监听器
+keyboard:enable();
+
 
 
 
@@ -57,9 +66,9 @@ damageLabel:Set({ text = "0", font = "small", align = "center", x = 80, y = scre
 roundTotalDamageLabel:Set({ text = "0", font = "small", align = "center", x = 80, y = screen.height - 65, width = 100, height = 20, r = 220, g = 50, b = 25 })
 
 --时间栏
-skillPanel = UI.SyncValue:Create('skillPanel')
-skillMaleZombieIcarusLabel = UI.Text.Create()
-skillMaleZombieIcarusLabel:Set({ text = '00', font = 'medium', align = 'center', x = center.x - 50, y = 20, width = 100, height = 150, r = 255, g = 255, b = 255 })
+timePanel = UI.SyncValue:Create('timePanel')
+timePanelLabel = UI.Text.Create()
+timePanelLabel:Set({ text = '00', font = 'medium', align = 'center', x = center.x - 50, y = 20, width = 100, height = 150, r = 255, g = 255, b = 255 })
 
 --技能点栏
 skillPoint = UI.SyncValue:Create("skillPoint" .. tostring(UI.PlayerIndex()))
@@ -71,10 +80,10 @@ skillPointLabel:Set({ text = '01', font = 'medium', align = 'left', x = 170, y =
 
 
 --ui game 交互变量
-testTomb = 0
 youAreZombie = false
-recoverTime = UI.GetTime()
 roundTotalDamage = 0
+stopControlTime = UI.GetTime()
+stopControlStatus = false
 --极速飞奔
 sprintCDTime = UI.GetTime() --冷却时间
 sprintDurationTime = UI.GetTime() --持续时间
@@ -563,12 +572,12 @@ function speedPanel:OnSync()
 end
 
 --时间栏
-function skillPanel:OnSync()
+function timePanel:OnSync()
     local minute = math.floor(self.value / 60)
     local second = math.floor(self.value % 60)
     local minuteString = string.format("%02d", minute)
     local secondString = string.format("%02d", second)
-    skillMaleZombieIcarusLabel:Set({ text = minuteString .. ":" .. secondString })
+    timePanelLabel:Set({ text = minuteString .. ":" .. secondString })
 end
 
 --伤害栏
@@ -603,10 +612,6 @@ function skillPoint:OnSync()
         })
     end
 end
-
---box绘图id
-local icarusImageId = nil --伊卡洛斯图画id
-local doubleJumpImageId = nil --二段跳图画id
 
 local skillOneImageId = nil
 local skillTwoImageId = nil
@@ -910,6 +915,16 @@ function UI.Event:OnUpdate(time)
         UI.Signal(SignalToGame.speedChangedGhostHand)
     end
 
+    -- 回合开始时静止
+    if stopControlStatus == true then
+        if time <= stopControlTime then
+            UI.StopPlayerControl(true)
+        else
+            UI.StopPlayerControl(false)
+            stopControlStatus = false
+        end
+    end
+
 end
 
 --玩家信号
@@ -956,6 +971,8 @@ function UI.Event:OnSignal(signal)
         --伤害还原
         damageLabel:Set({ text = "0" })
         roundTotalDamageLabel:Set({ text = "0" })
+        stopControlStatus = true
+        stopControlTime = uiTime + 2
     end
 
     --消除所有改变模型状态的图标
@@ -1015,11 +1032,6 @@ function UI.Event:OnSignal(signal)
             zombieSpecialSkillDurationTime = uiTime + 1
         end
 
-    end
-
-    --最后一次被攻击
-    if signal == SignalToUI.lastAttack then
-        recoverTime = uiTime + 5
     end
 
     --僵尸感染
@@ -1280,19 +1292,6 @@ function getSkillBgArgs(index)
     }
 end
 
---打印表
-function ZCLOG(Lua_table)
-    for k, v in pairs(Lua_table) do
-        if type(v) == "table" then
-            for kk, vv in pairs(v) do
-                print(kk, " = ", vv)
-            end
-        else
-            print(k, " = ", v)
-        end
-    end
-end
-
 --关闭toast
 function closeToastOnScreen()
     Toast:closeToast(toastLayerName)
@@ -1312,4 +1311,93 @@ function makeToastOnScreen(text, duration, length, x, y, layerName, ps)
     removeSkillImageFuncremoveSkillImageFunc(youAreZombie)
 end
 
+-- 键盘
+--绑定一个组合键、
+-- 切换视角按键绑定
+keyboard:bind(keyboardKeyList.toggleView, function()
+    UI.Signal(SignalToGame.toggleView)
+end);
+
+-- 跳跃按键绑定
+keyboard:bind(keyboardKeyList.jump, function()
+    UI.Signal(SignalToGame.jump)
+end);
+
+-- 伊卡洛斯按键绑定
+keyboard:bind(keyboardKeyList.icarus, function()
+    if not spaceHolding then
+        spaceHolding = true
+        holdingTime = UI.GetTime() + 0.5
+    end
+
+    if holdingTime <= UI.GetTime() then
+        UI.Signal(SignalToGame.icarus)
+        spaceHolding = false
+    end
+end);
+
+-- 查看伊卡洛斯或二段跳按键绑定
+keyboard:bind(keyboardKeyList.checkZombieSkillOne, function()
+    typeSkillDescribe(6)
+end);
+
+-- 查看当前选择的僵尸的技能按键绑定
+keyboard:bind(keyboardKeyList.checkZombieSkillTwo, function()
+    typeSkillDescribe(7)
+end);
+
+-- 查看当前技能栏第一个技能说明按键绑定
+keyboard:bind(keyboardKeyList.checkCurrentSkillOne, function()
+    typeSkillDescribe(1)
+end)
+
+-- 查看当前技能栏第二个技能说明按键绑定
+keyboard:bind(keyboardKeyList.checkCurrentSkillTwo, function()
+    typeSkillDescribe(2)
+end)
+
+-- 查看当前技能栏第三个技能说明按键绑定
+keyboard:bind(keyboardKeyList.checkCurrentSkillThree, function()
+    typeSkillDescribe(3)
+end)
+
+-- 查看当前技能栏第四个技能说明按键绑定
+keyboard:bind(keyboardKeyList.checkCurrentSkillFour, function()
+    typeSkillDescribe(4)
+end)
+
+-- 查看当前技能栏第五个技能说明按键绑定
+keyboard:bind(keyboardKeyList.checkCurrentSkillFive, function()
+    typeSkillDescribe(5)
+end)
+
+-- 取消查看技能说明按键绑定
+keyboard:bind(keyboardKeyList.closeSkillDescribeKLayer, function()
+    removeSkillDescribe()
+end);
+
+-- 获得技能按键绑定
+keyboard:bind(keyboardKeyList.getSkill, function()
+    UI.Signal(SignalToGame.getSkill)
+end);
+
+-- 打开背包按键绑定
+keyboard:bind(keyboardKeyList.toggleWeaponInventory, function()
+    UI.Signal(SignalToGame.openWeaponInven)
+end);
+
+-- 激活僵尸技能按键绑定
+keyboard:bind(keyboardKeyList.activeZombieSkill, function()
+    UI.Signal(SignalToGame.gKeyUsed)
+end);
+
+-- 极速飞奔技能按键绑定
+keyboard:bind(keyboardKeyList.sprintSkill, function()
+    UI.Signal(SignalToGame.sprint)
+end)
+
+-- 致命打击技能按键绑定
+keyboard:bind(keyboardKeyList.criticalSkill, function()
+    UI.Signal(SignalToGame.critical)
+end)
 

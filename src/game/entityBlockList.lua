@@ -1,6 +1,8 @@
---你的地图中位置监测方块的坐标 示例：{x = 1, y = 1, z = 1}
+--你的地图中位置监测方块的坐标
+--示例：在你的地图上放置一个位置检测方块，然后使用V键菜单打开显示坐标
+--用缔造者复制器选中你的位置监测方块，此时屏幕上会出现三个用逗号隔开的数，从左至右分别按照这个格式{x = 1, y = 1, z = 1}填写
 positionCheckEntityBlockTable = {
-    --1
+    --1 这里表示上面的号码是1的位置检测方块
     { x = -162, y = -162, z = 4 },
     { x = -164, y = -177, z = 0 },
     { x = -160, y = -154, z = 3 },
@@ -253,20 +255,21 @@ positionCheckEntityBlockTable = {
 
 positionCheckEntityBlockList = {}
 
---你的地图中母体复活点方块的坐标
+--你的地图中母体复活点方块的坐标 最好也是一个位置检测方块 这样正好注册了这个母体复活点就在这个位置检测方块这里
 hostRespawnPosition = { x = -164, y = -177, z = 0 }
 hostRespawnEntityBlock = Game.EntityBlock.Create(hostRespawnPosition)
 
---你的地图中人类集合点方块的坐标
+--你的地图中人类集合点方块的坐标 最好也是一个位置检测方块 这样正好注册了这个母体复活点就在这个位置检测方块这里
 humanGatherPosition = { x = -162, y = -162, z = 4 }
 humanGatherEntityBlock = Game.EntityBlock.Create(humanGatherPosition)
 
---你的地图中范围逃脱方块的坐标(范围逃脱方块无效，请用范围触发方块代替)
+--你的地图中范围逃脱方块的坐标(缔造者游戏模式中范围逃脱方块无效，请用范围触发方块代替形成逃脱范围，连接一个倒计时装置形成逃脱时间)
 escapePosition = { x = 29, y = 150, z = -46 }
 escapeEntityBlock = Game.EntityBlock.Create(escapePosition)
 
+--为你注册的可触碰方块(也就是上面的位置检测方块、母体复活方块、人类集合点方块、范围逃脱方块)注册函数
 function createEntityBlockFunc()
-    for i = 1, getEntityBlockTableLength(positionCheckEntityBlockTable) do
+    for i = 1, ZCLOGLength(positionCheckEntityBlockTable) do
         local theEntityBlock = Game.EntityBlock.Create(positionCheckEntityBlockTable[i])
         table.insert(positionCheckEntityBlockList, theEntityBlock)
     end
@@ -275,7 +278,7 @@ function createEntityBlockFunc()
         return
     end
 
-    for i = 1, getEntityBlockTableLength(positionCheckEntityBlockList) do
+    for i = 1, ZCLOGLength(positionCheckEntityBlockList) do
         if positionCheckEntityBlockList[i] ~= nil then
             local theEntityBlock = positionCheckEntityBlockList[i]
             function theEntityBlock:OnTouch(player)
@@ -290,14 +293,5 @@ function createEntityBlockFunc()
 end
 
 --获得table长度
-function getEntityBlockTableLength(theTable)
-    local length = 0
-    for k, v in pairs(theTable) do
-        length = length + 1
-    end
-    return length
-end
 
 createEntityBlockFunc()
-
-

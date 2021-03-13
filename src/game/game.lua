@@ -5,31 +5,36 @@ Game.Rule.enemyfire = true
 Game.Rule.friendlyfire = false
 Game.Rule.breakable = false
 
-Timer = { valid = false, timer = 0 }
+--定义游戏计时器
+GameTimer = { valid = false, timer = 0 }
 
-function Timer:Init()
+--游戏计时器初始化函数
+function GameTimer:Init()
     self.valid = false
     self.timer = 0
 end
 
-function Timer:IsValid()
+--游戏计时器是否还有效
+function GameTimer:IsValid()
     return self.valid
 end
 
-function Timer:Start(duration)
+--启动游戏计时器
+function GameTimer:Start(duration)
     self.valid = true
     self.timer = Game.GetTime() + duration
 end
 
-function Timer:IsElapsed()
+--游戏计时器是否失效
+function GameTimer:IsElapsed()
     if self.valid == false then
         return false
     end
-
     return self.timer < Game.GetTime()
 end
 
-function Timer:new(o)
+--新建一个游戏计时器实例
+function GameTimer:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
@@ -42,54 +47,35 @@ scoreGoal = Game.SyncValue:Create('goal') --总回合
 scoreHuman = Game.SyncValue:Create("human") --人类获胜回合
 scoreZombie = Game.SyncValue:Create("zombie") --僵尸获胜回合
 
-scoreGoal.value = 5
+scoreGoal.value = gameInitializeData.totalRoundNumber
 scoreHuman.value = 0
 scoreZombie.value = 0
 
 speedPanelTable = {} --速度栏表
-skillPanel = Game.SyncValue:Create('skillPanel') --技能栏改成时间栏
-skillPanelKeyboard = Game.SyncValue:Create('skillPanelKeyboard') --技能栏改成时间栏
+timePanel = Game.SyncValue:Create('timePanel') --时间栏
 damagePanelTable = {} --伤害栏表
 skillPointTable = {} --技能点表
 
--- 每回合时间
-READY_TIME = 21
-ROUND_TIME = 480
-TOTAL_GAME_TIME = 2500
-roundtimer = Timer:new()
-escapeTimer = Timer:new()
-totalGameTimer = Timer:new()
+-- 游戏初始值设定
+READY_TIME = gameInitializeData.readyTime
+ROUND_TIME = gameInitializeData.roundTime
+TOTAL_GAME_TIME = gameInitializeData.totalGameTime
+ROUND_NEED_WIN = gameInitializeData.roundNeedWin
+
+-- 一些计时器的定义
+roundTimer = GameTimer:new()
+escapeTimer = GameTimer:new()
+totalGameTimer = GameTimer:new()
 totalGameTimer:Start(TOTAL_GAME_TIME)
 
-theHumanSkillCDTime = Game.GetTime() --人类技能在回合开始前不能使用
+--人类技能在回合开始前不能使用
+theHumanSkillCDTime = Game.GetTime()
 
 --母体已经出现人类不能中途加入复活
 hostShow = false
 
-
-
-
---玩家渲染方式
-playerRenderFx = {
-    normal = 0,
-    tic = 15,
-    shake = 16,
-    sneak = 18,
-    glowShell = 19,
-    dark = 21,
-    color = 22,
-    colorEx = 23
-}
-
--- 游戏状态
-STATE = {
-    READY = 1, -- 准备就绪
-    PLAYING = 2, -- 回合进行中
-    END = 3, -- 回合结算中
-}
-
---升级需要经验
-playerLevelUpExp = 5000
+--升级所需要的经验
+PLAYER_LEVEL_UP_EXP = gameInitializeData.playerLevelUpExp
 
 -- 玩家表
 players = {}
@@ -100,7 +86,6 @@ end
 --定义回合信息
 state = STATE.READY --回合状态
 roundEndTime = nil --回合结束时间
-roundRunning = false --回合是否正在进行
 currentRoundHumanPlayerList = {} --本回合目前人类玩家列表
 currentRoundZombiePlayerList = {} --本回合目前僵尸玩家列表
 
@@ -145,16 +130,6 @@ function Game.Rule:OnUpdate (time)
             end
 
             --玩家地速结束
-
-            --玩家恢复控制权
-            --if pUser.static == true and pUser.staticTime ~= nil then
-            --    if pUser.staticTime >= time then
-            --        playerSpeedStatic(thePlayer)
-            --    else
-            --        pUser.static = false
-            --    end
-            --end
-            --玩家恢复控制权结束
 
             --致命打击结束
             if pUser.criticaling == true then
@@ -313,7 +288,7 @@ function Game.Rule:OnUpdate (time)
 
     --确定回合时间
     if state == STATE.READY then
-        if roundtimer:IsElapsed() then
+        if roundTimer:IsElapsed() then
             escapeTimer:Start(ROUND_TIME)
             roundEndTime = time + ROUND_TIME
             state = STATE.PLAYING
@@ -322,9 +297,9 @@ function Game.Rule:OnUpdate (time)
 
     --倒计时
     if roundEndTime ~= nil and roundEndTime >= time then
-        skillPanel.value = math.floor(roundEndTime - time)
+        timePanel.value = math.floor(roundEndTime - time)
     else
-        skillPanel.value = 480
+        timePanel.value = gameInitializeData.roundTime
     end
 
     --检查胜利机制
@@ -473,7 +448,7 @@ function Game.Rule:OnPlayerJoiningSpawn(player)
     pUser.giveGunTime = gameTime + 0.2 --发枪时间
     pUser.roundStartModelChange = false --是否属于回合开始，如果是就要给小刀
 
-    if roundtimer:IsElapsed() == true or hostShow then
+    if roundTimer:IsElapsed() == true or hostShow then
         pUser.wait = true --是否让玩家等待
     else
         pUser.wait = false --是否让玩家等待
@@ -486,13 +461,9 @@ end
 
 --玩家出生
 function Game.Rule:OnPlayerSpawn (player)
-
     InitPlayer(player)
     respawnPositionRecover(player)
     goToSpectator(player)
-    -- returnWeapons(player)
-    -- player:ShowBuymenu()
-
 end
 
 --玩家进入观察者
@@ -515,11 +486,9 @@ end
 
 --出生发枪
 function giveInitialGun(player)
-
     if player == nil then
         return
     end
-
     local pUser = player.user
     if pUser.firstJoin == true then
         local SPM4 = Game.Weapon:CreateAndDrop(78, player.position)
@@ -581,18 +550,6 @@ function returnWeapons(player)
 
 end
 
---给予初始武器
-function giveTheGuns(call)
-    if call then
-        for i = 1, 24 do
-            local player = players[i]
-            if player ~= nil then
-                giveInitialGun(player)
-            end
-        end
-    end
-end
-
 --玩家死亡
 function Game.Rule:OnPlayerKilled(victim, killer)
     if victim == nil then
@@ -647,10 +604,6 @@ function Game.Rule:OnPlayerKilled(victim, killer)
 
 end
 
---玩家或怪物死亡
-function Game.Rule:OnKilled(victim, killer)
-end
-
 --播放惨叫
 function playScreamSound()
     Game.SetTrigger("playScreamSound", true)
@@ -658,7 +611,6 @@ end
 
 --初始化玩家
 function InitPlayer(player)
-    -- playScreamSound()
     local pUser = player.user
     if pUser.zombie == true then
         -- playScreamSound()
@@ -680,73 +632,38 @@ function InitPlayer(player)
             if heroZombieNumber <= 3 then
                 --普通母体
                 player.model = 30
-                pUser.zombieExclusiveSkill = player.model
-                player.maxhealth = 40000
-                if pUser.rehydration == true then
-                    player.maxhealth = player.maxhealth + 20000
-                end
-                player.maxarmor = 8000
-                player.health = math.floor(player.maxhealth * hpRate)
-                player.armor = math.floor(player.maxarmor * armorRate)
-                player.flinch = 1.0
-                player.knockback = 1.0
-                player.maxspeed = 1.0
-                pUser.jumpRate = 1.3
-                pUser.speedRate = 1.05
-                pUser.jumpLevel = 1
-                pUser.resistance = 1.0
-                pUser.canIcraus = true
-                pUser.hostMenu = true --母体菜单
-                player:Signal(SignalToUI.infect) --发送感染信号
-                player:Signal(SignalToUI.icarusSkillGet) --发送男性僵尸伊卡洛斯信号
-                player:Signal(SignalToUI.indurationSkillGet)
             elseif heroZombieNumber <= 7 then
                 --男英雄僵尸
                 player.model = 41
-                player.maxhealth = 80000
-                if pUser.rehydration == true then
-                    player.maxhealth = player.maxhealth + 20000
-                end
-                player.maxarmor = 8000
-                player.health = math.floor(player.maxhealth * hpRate)
-                player.armor = math.floor(player.maxarmor * armorRate)
-                player.flinch = 0.8
-                player.knockback = 0.8
-                player.maxspeed = 1.0
-                pUser.jumpRate = 1.3
-                pUser.speedRate = 1.06
-                pUser.jumpLevel = 1
-                pUser.resistance = 0.5
-                pUser.canIcraus = true
-                pUser.hostMenu = true --母体菜单
-                player:Signal(SignalToUI.infect) --发送感染信号
-                player:Signal(SignalToUI.icarusSkillGet)
-                player:Signal(SignalToUI.undyingSkillGet)
+                --暴虐钢骨
             else
                 --女英雄僵尸
                 player.model = 42
-                player.maxhealth = 40000
-                if pUser.rehydration == true then
-                    player.maxhealth = player.maxhealth + 20000
-                end
-                player.maxarmor = 4000
-                player.health = math.floor(player.maxhealth * hpRate)
-                player.armor = math.floor(player.maxarmor * armorRate)
-                player.flinch = 0.5
-                player.knockback = 1.2
-                player.maxspeed = 1
-                pUser.jumpRate = 1.35
-                pUser.speedRate = 1.08
-                pUser.jumpLevel = 2
-                pUser.resistance = 2.0
-                pUser.canIcraus = false
-                pUser.hostMenu = true --母体菜单
-                player:Signal(SignalToUI.infect) --发送感染信号
-                player:Signal(SignalToUI.doubleJumpSkillGet)
-                player:Signal(SignalToUI.hiddenSkillGet)
                 --幻痛夜魔
             end
-
+            local theZombieDatas = zombieTable[player.model - 29]
+            if theZombieDatas == nil then
+                theZombieDatas = zombieTable[1]
+            end
+            player.maxhealth = theZombieDatas.maxhealth
+            if pUser.rehydration == true then
+                player.maxhealth = player.maxhealth + 20000
+            end
+            player.maxarmor = theZombieDatas.maxarmor
+            player.health = math.floor(player.maxhealth * hpRate)
+            player.armor = math.floor(player.maxarmor * armorRate)
+            player.flinch = theZombieDatas.flinch
+            player.knockback = theZombieDatas.knockback
+            player.maxspeed = theZombieDatas.maxspeed
+            pUser.jumpRate = theZombieDatas.jumpRate
+            pUser.speedRate = theZombieDatas.speedRate
+            pUser.jumpLevel = theZombieDatas.jumpLevel
+            pUser.resistance = theZombieDatas.resistance
+            pUser.canIcraus = theZombieDatas.canIcraus
+            pUser.hostMenu = true --母体菜单
+            player:Signal(SignalToUI.infect) --发送感染信号
+            player:Signal(theZombieDatas.skillOneSignal)
+            player:Signal(theZombieDatas.skillTwoSignal)
         end
         --普通僵尸
     else
@@ -781,7 +698,6 @@ function InitPlayer(player)
         pUser.canIcraus = false --普通僵尸伊卡洛斯
         pUser.hostMenu = false --母体菜单
         pUser.zombie = false
-        -- player:ShowBuymenu()
     end
 end
 
@@ -795,7 +711,7 @@ end
 --回合开始
 function Game.Rule:OnRoundStart()
     hostShow = false
-    roundtimer:Start(READY_TIME)
+    roundTimer:Start(READY_TIME)
     state = STATE.READY
     roundEndTime = nil
     for i = 1, 24 do
@@ -850,17 +766,6 @@ function Game.Rule.OnRoundStartFinished()
     end
 end
 
---测试CT直接获胜
-function CTWin(call)
-    if call then
-        Game.Rule:Win(Game.TEAM.CT, false)
-
-        breakableBlock:Event({
-            action = "reset"
-        })
-    end
-end
-
 --逃脱成功
 function escapeSuccess(call)
     local exitGame = false
@@ -900,9 +805,8 @@ end
 
 --检测回合胜利标准
 function checkWinCondition(time)
-
+    --只有在游戏状态为正在游戏中才能判断是否胜利
     if state == STATE.PLAYING then
-
         local humanNumber, zombieNumber = getHumanLiveNumber()
         local exitGame = false
 
@@ -942,28 +846,8 @@ function checkWinCondition(time)
 
 end
 
---僵尸复活前往死亡时的位置
-function zombieRespawnPositionRecover(call)
-    if call then
-        local tempPlayer = Game.GetTriggerEntity()
-        if tempPlayer:IsPlayer() then
-            local player = tempPlayer:ToPlayer()
-            local pUser = player.user
-            -- if pUser.zombie and pUser.infectionPosition ~= nil then
-            -- end
-            if pUser.useInfectionPosition == true and pUser.infectionPosition ~= nil then
-                pUser.useInfectionPosition = false
-                player.position = pUser.infectionPosition
-            elseif pUser.lastRecordPosition ~= nil then
-                player.position = pUser.lastRecordPosition
-            end
-        end
-    end
-end
-
 --复活前往指定的位置
 function respawnPositionRecover(player)
-
     local pUser = player.user
     if pUser.useInfectionPosition == true then
         if pUser.infectionPosition ~= nil then
@@ -987,36 +871,6 @@ function respawnPositionRecover(player)
         end
     end
     -- player:Kill()
-end
-
---掉枪试验
-function dropGun(call)
-
-    if call then
-        if validateGunsList ~= nil then
-            local theCaller = Game.GetScriptCaller()
-            if theCaller ~= nil then
-                local weaponMaxNumber = ZCLOGLength(validateGunsList)
-                local weaponNumber = math.random(1, weaponMaxNumber)
-                local theGun = Game.Weapon:CreateAndDrop(validateGunsList[weaponNumber], theCaller.position)
-                spWeapon(theGun)
-            end
-        end
-    end
-
-end
-
---测试武器列表
-function testWeaponList(call)
-    if call then
-        local tempPlayer = Game.GetTriggerEntity()
-        if tempPlayer:IsPlayer() then
-            local player = tempPlayer:ToPlayer()
-            local weaponList = player:GetWeaponInvenList()
-            -- weaponList[1] = weaponList[2]
-            -- ZCLOG(weaponList)
-        end
-    end
 end
 
 --装填事件
@@ -1082,39 +936,6 @@ function Game.Rule:OnSwitchWeapon (player)
     player:Signal(SignalToUI.sneakQuickReloadSuspend)
 end
 
---武器检测
-function checkPlayerWeapon(call)
-    if call then
-
-        local tempPlayer = Game.GetTriggerEntity()
-        if tempPlayer:IsPlayer() then
-
-            local player = tempPlayer:ToPlayer()
-            local weapon = player:GetPrimaryWeapon()
-            if weapon ~= nil then
-            end
-
-        end
-
-    end
-end
-
---备弹事件
-function backClip(call)
-
-    if call then
-        local tempPlayer = Game.GetTriggerEntity()
-        if tempPlayer:IsPlayer() then
-            local truePlayer = tempPlayer:ToPlayer()
-            local thePrimaryWeapon = truePlayer:GetPrimaryWeapon()
-            if thePrimaryWeapon ~= nil then
-                truePlayer:GetPrimaryWeapon():AddClip1(1)
-            end
-        end
-    end
-
-end
-
 --开火事件
 function Game.Rule:PostFireWeapon(player, weapon, time)
     local pUser = player.user
@@ -1154,12 +975,11 @@ end
 
 --玩家攻击事件
 function Game.Rule:OnPlayerAttack(victim, attacker, damage, weapontype, hitbox)
-
-
+    --游戏未开始不受伤害
     if state ~= STATE.PLAYING then
         return 0
     end
-
+    --受害者为空不受伤害
     if victim == nil then
         return 0
     end
@@ -1168,8 +988,6 @@ function Game.Rule:OnPlayerAttack(victim, attacker, damage, weapontype, hitbox)
     local gameTime = Game.GetTime()
     local actuallyDamage = math.floor(damage)
     local vUser = victim.user
-
-
     --模型伤害效果
     if vUser.resistance ~= nil then
         actuallyDamage = math.floor(actuallyDamage * vUser.resistance)
@@ -1181,16 +999,12 @@ function Game.Rule:OnPlayerAttack(victim, attacker, damage, weapontype, hitbox)
     vUser.recoverTime = vUser.lastAttackTime + 5
     victim:Signal(SignalToUI.lastAttack)
     --呼吸回血时间设置结束
-
-
     if attacker == nil then
         return actuallyDamage
     end
 
-
     --玩家间伤害逻辑
     local aUser = attacker.user
-
     vUser.respawnable = true
     aUser.respawnable = true
     --优先级最低：玩家增伤
@@ -1326,7 +1140,6 @@ end
 
 --玩家或怪物攻击事件
 function Game.Rule:OnTakeDamage (victim, attacker, damage, weapontype, hitbox)
-
 end
 
 --获得武器事件
@@ -1475,10 +1288,10 @@ function changeSpeed(call)
     if call then
         local tempPlayer = Game.GetTriggerEntity()
         if tempPlayer:IsPlayer() then
-            local thePlayer = tempPlayer:ToPlayer()
-            thePlayer.maxspeed = 1.2
-            thePlayer.gravity = 0.725
-            thePlayer.infiniteclip = true
+            local player = tempPlayer:ToPlayer()
+            player.maxspeed = 1.2
+            player.gravity = 0.725
+            player.infiniteclip = true
         end
     end
 
@@ -1513,34 +1326,6 @@ function getSpeed(player)
         v = 9999
     end
     return math.floor(v)
-end
-
---移除武器测试
-function removeWeapon(call)
-    if call then
-        local tempPlayer = Game.GetTriggerEntity()
-        if tempPlayer:IsPlayer() then
-            local player = tempPlayer:ToPlayer()
-            player:RemoveWeapon()
-        end
-    end
-end
-
---玩家武器解锁
-function unlockWeapon(call)
-    if call then
-        local tempPlayer = Game.GetTriggerEntity()
-        if tempPlayer:IsPlayer() then
-            local player = tempPlayer:ToPlayer()
-            local playerWeaponList = player:GetWeaponInvenList()
-
-            for i = 1, 30 do
-                if playerWeaponList[i] then
-                    player:SetWeaponInvenLockedUI(playerWeaponList[i], false)
-                end
-            end
-        end
-    end
 end
 
 --玩家信号
@@ -1605,6 +1390,9 @@ function Game.Rule:OnPlayerSignal(player, signal)
                 theZombieData = zombieTable[1]
             end
             player.maxhealth = theZombieData.maxhealth
+            if pUser.rehydration == true then
+                player.maxhealth = player.maxhealth + 20000
+            end
             player.maxarmor = theZombieData.maxarmor
             player.health = math.floor(player.maxhealth * hpRate)
             player.armor = math.floor(player.maxarmor * armorRate)
@@ -1626,8 +1414,6 @@ function Game.Rule:OnPlayerSignal(player, signal)
 
     --获得技能
     if signal == SignalToGame.getSkill then
-
-        pUser.adaptability = true
 
         if pUser.currentLevel == nil then
             pUser.currentLevel = 1
@@ -1883,7 +1669,6 @@ function CalcMaxZombie()
         end
     end
 
-    -- 현재 플레이어 수에 따라 좀비 수 결정
     if numPlr > 20 then
         return 3
     elseif numPlr > 10 then
@@ -1926,56 +1711,7 @@ function showHostZombie(call)
     end
 end
 
---table转字符串
-function tableToString(luaTable)
-    local tableString = "";
-    for k, v in pairs(luaTable) do
-        tableString = tableString .. v
-    end
-    return tableString
-end
-
---递归遍历table
-function ZCLOG(Lua_table)
-    for k, v in pairs(Lua_table) do
-        if type(v) == "table" then
-            for kk, vv in pairs(v) do
-                print(kk, " = ", vv)
-                -- log(kk, " = ", vv)
-            end
-        else
-            print(k, " = ", v)
-            log(k, " = ", v)
-        end
-    end
-end
-
---获得table长度
-function ZCLOGLength(Lua_table)
-    local length = 0
-    for k, v in pairs(Lua_table) do
-        length = length + 1
-    end
-    return length
-end
-
---复制table
-function copyTable(orig)
-    local orig_type = type(orig)
-    local copy
-    if orig_type == "table" then
-        copy = {}
-        for orig_key, orig_value in next, orig, nil do
-            copy[copyTable(orig_key)] = copyTable(orig_value)
-        end
-    else
-        -- number, string, boolean, etc
-        copy = orig
-    end
-    return copy
-end
-
---选择性复制技能表
+-- 选择性复制技能表
 function copyTableExcludeTable(copy, exclude)
     local copyType = type(copy)
     local excludeType = type(exclude)
@@ -2024,8 +1760,8 @@ function addPlayerExp(player, theExp)
         pUser.currentLevel = 1
     end
     pUser.currentExp = pUser.currentExp + theExp
-    if pUser.currentExp >= playerLevelUpExp then
-        pUser.currentExp = pUser.currentExp - playerLevelUpExp
+    if pUser.currentExp >= PLAYER_LEVEL_UP_EXP then
+        pUser.currentExp = pUser.currentExp - PLAYER_LEVEL_UP_EXP
         pUser.currentLevel = pUser.currentLevel + 1
         pUser.skillPoint = pUser.skillPoint + 1
         if pUser.skillPoint >= 10 then
@@ -2044,7 +1780,7 @@ end
 
 --计算经验条百分比
 function calculateExpPercent(theExp)
-    return theExp / playerLevelUpExp or 0
+    return theExp / PLAYER_LEVEL_UP_EXP or 0
 end
 
 --获得加速后的还原速度
@@ -2088,8 +1824,8 @@ function getHumanLiveNumber()
     local zombieNumber = 0
     for i = 1, 24 do
         if players[i] ~= nil then
-            local thePlayer = players[i]
-            local pUser = thePlayer.user
+            local player = players[i]
+            local pUser = player.user
             if pUser.respawnable == true then
                 if pUser.zombie == true then
                     zombieNumber = zombieNumber + 1

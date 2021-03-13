@@ -2,12 +2,6 @@ layerTable = {} --图层表
 
 Class = (function()
 
-    function ZCLOG(Lua_table)
-        for k, v in pairs(Lua_table) do
-            print(k, v)
-        end
-    end
-
     local function TRANSLATE(object)
         local str = {};
         if type(object) == "number" then
@@ -184,6 +178,7 @@ Class = (function()
     return CREATECLASS;
 end)();
 
+-- 字符串类
 Class("String", function(String)
     String.STATIC = true;
     function String:charSize(char)
@@ -232,6 +227,7 @@ Class("String", function(String)
     end
 end);
 
+-- 监听类
 Class("Listener", function(Listener)
     function Listener:constructor(func)
         self.call = func;
@@ -251,6 +247,7 @@ Class("Listener", function(Listener)
     end
 end);
 
+-- 延时任务类
 Class("TimerTask", function(TimerTask)
     function TimerTask:constructor(func, time, period)
         self.super(func);
@@ -259,6 +256,7 @@ Class("TimerTask", function(TimerTask)
     end
 end, Listener);
 
+-- 事件类
 Class("Event", function(Event)
     Event.STATIC = true;
     Event.listenerList = {};
@@ -305,6 +303,7 @@ Class("Event", function(Event)
     end
 end);
 
+-- 时间类
 Class("Timer", function(Timer)
     Timer.STATIC = true;
 
@@ -343,6 +342,7 @@ Class("Timer", function(Timer)
     end
 end);
 
+-- 路由类
 Class("Route", function(Route)
     Route.STATIC = true;
 
@@ -372,14 +372,15 @@ Class("Route", function(Route)
 
 end);
 
+-- 组类
 Class("Group", function(Group)
     function Group:constructor()
-
     end
 end);
 
 if Game ~= nil then
 
+    -- 网端服务端类
     Class("NetServer", function(NetServer)
         NetServer.STATIC = true;
         NetServer.receivbBuffer = {};
@@ -445,6 +446,7 @@ end
 
 if UI ~= nil then
 
+    -- 请求类
     Class("Request", function(Request)
         function Request:constructor(code, bytes)
             self.code = code;
@@ -462,56 +464,59 @@ if UI ~= nil then
         end
     end);
 
-    -- Class("NetClient",function(NetClient)
-    -- NetClient.STATIC = true;
-    -- NetClient.name = "";
+    -- 网段客户端类
+    Class("NetClient", function(NetClient)
+        NetClient.STATIC = true;
+        NetClient.name = "";
 
-    -- NetClient.requestQueue = {};
+        NetClient.requestQueue = {};
 
-    -- NetClient.receivbBuffer = {
-    -- key = -1,
-    -- length = -1,
-    -- value = {},
-    -- };
+        NetClient.receivbBuffer = {
+            key = -1,
+            length = -1,
+            value = {},
+        };
 
-    -- Event:addEventListener(Event.OnSignal,function(self,signal)
-    -- print("!!!! = ", signal)
-    -- if NetClient.receivbBuffer.key == -1 then
-    -- NetClient.receivbBuffer.key = signal;
-    -- elseif NetClient.receivbBuffer.length == -1 then
-    -- NetClient.receivbBuffer.length = signal;
-    -- else
-    -- NetClient.receivbBuffer.value[#NetClient.receivbBuffer.value+1] = signal;
-    -- NetClient.receivbBuffer.length = NetClient.receivbBuffer.length - 1;
-    -- end
-    -- if NetClient.receivbBuffer.length == 0 then
-    -- Route._UI[NetClient.receivbBuffer.key](NetClient.receivbBuffer.value);
-    -- NetClient.receivbBuffer = {
-    -- key = -1,
-    -- length = -1,
-    -- value = {},
-    -- };
-    -- end
-    -- end);
+        Event:addEventListener(Event.OnSignal, function(self, signal)
+            print("!!!! = ", signal)
+            if NetClient.receivbBuffer.key == -1 then
+                NetClient.receivbBuffer.key = signal;
+            elseif NetClient.receivbBuffer.length == -1 then
+                NetClient.receivbBuffer.length = signal;
+            else
+                NetClient.receivbBuffer.value[#NetClient.receivbBuffer.value + 1] = signal;
+                NetClient.receivbBuffer.length = NetClient.receivbBuffer.length - 1;
+            end
+            if NetClient.receivbBuffer.length == 0 then
+                Route._UI[NetClient.receivbBuffer.key](NetClient.receivbBuffer.value);
+                NetClient.receivbBuffer = {
+                    key = -1,
+                    length = -1,
+                    value = {},
+                };
+            end
+        end);
 
-    -- function NetClient:createSyncValue(key,call)
-    -- local syncValue = UI.SyncValue:Create("["..NetClient.name.."]:"..key);
-    -- syncValue.OnSync = call;
-    -- return syncValue;
-    -- end
+        function NetClient:createSyncValue(key, call)
+            local syncValue = UI.SyncValue:Create("[" .. NetClient.name .. "]:" .. key);
+            syncValue.OnSync = call;
+            return syncValue;
+        end
 
-    -- function NetClient:request(request,success)
-    -- for i = 1,#request.body do
-    -- UI.Signal(request.body[i]);
-    -- end
-    -- self.requestQueue[#self.requestQueue+1] = success or function() end;
-    -- end
+        function NetClient:request(request, success)
+            for i = 1, #request.body do
+                UI.Signal(request.body[i]);
+            end
+            self.requestQueue[#self.requestQueue + 1] = success or function()
+            end;
+        end
 
-    -- NetClient:request(Request(Route.Game.GETNAME),function(bytes)
-    -- NetClient.name = String:toString(bytes);
-    -- end)
-    -- end);
+        NetClient:request(Request(Route.Game.GETNAME), function(bytes)
+            NetClient.name = String:toString(bytes);
+        end)
+    end);
 
+    -- Base64解码类
     Class("Base64", function(Base64)
         Base64.STATIC = true;
         local charlist = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ<>";
@@ -530,6 +535,7 @@ if UI ~= nil then
         end
     end);
 
+    -- 位图类
     Class("Bitmap", function(Bitmap)
         function Bitmap:constructor(data)
             self.size = 1;
@@ -562,6 +568,7 @@ if UI ~= nil then
 
     end);
 
+    -- 键盘类
     Class("Keyboard", function(Keyboard)
         Keyboard.TYPE_DOWN = 0;
         Keyboard.TYPE_UP = 1;
@@ -675,6 +682,7 @@ if UI ~= nil then
         end
     end);
 
+    -- 字体类
     Class("Font", function(Font)
         function Font:constructor(size)
             self.count = 0;
@@ -762,6 +770,7 @@ if UI ~= nil then
         end
     end);
 
+    -- 图形类
     Class("Graphics", function(Graphics)
         Song = Font();
 
@@ -906,6 +915,7 @@ if UI ~= nil then
         end
     end);
 
+    -- 图层类
     Class("Layer", function(Layer)
         function Layer:constructor(layerName)
             self.components = {};
@@ -1004,6 +1014,7 @@ if UI ~= nil then
         end
     end);
 
+    -- 框架类
     Class("Frame", function(Frame)
         Frame.STATIC = true;
 
@@ -1048,6 +1059,7 @@ if UI ~= nil then
         end
     end);
 
+    -- 组件类
     Class("Component", function(Component)
         function Component:constructor(x, y, width, height, attributes)
             self.x = x or 0;
@@ -1157,6 +1169,7 @@ if UI ~= nil then
         end
     end);
 
+    -- 项目类
     Class("Item", function(Item)
         function Item:constructor(name, value)
             self.parent = NULL;
@@ -1207,8 +1220,7 @@ if UI ~= nil then
     end);
 
 
-    --僵尸菜单
-
+    -- 僵尸菜单类
     Class("ZombieMenu", function(ZombieMenu)
         function ZombieMenu:constructor(itemTree, attributes)
             self.super(30, 100, 200, 100);
@@ -1350,9 +1362,7 @@ if UI ~= nil then
 
     end, Component);
 
-
-
-    --菜单
+    -- 菜单类
     Class("ItemMenu", function(ItemMenu)
         function ItemMenu:constructor(itemTree, attributes)
             self.super(30, 100, 200, 100);
@@ -1477,82 +1487,26 @@ if UI ~= nil then
 
     end, Component);
 
-    --僵尸菜单列表
-    zombieList = {
-        "普通",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Normal)
-            -- print(self.a)
-        end,
-        "芭比",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Light)
-        end,
-        "屠夫",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Heavy)
-        end,
-        "迷雾",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Phycho)
-        end,
-        "巫蛊",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Voodoo)
-        end,
-        "恶魔",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Deimos)
-        end,
-        "猎手",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Ganymade)
-        end,
-        "送葬者",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Stamper)
-        end,
-        "女妖",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Banshee)
-        end,
-        "禁卫",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Venomguard)
-        end,
-        "女王",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Stingfinger)
-        end,
-        "傀儡",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Chaser)
-        end,
-        "狂魔",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Blotter)
-        end,
-        "恶灵",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Rustywing)
-        end,
-        "恶鬼",
-        function()
-            UI.Signal(SignalToGame.S_Zombie_Model_Aksha)
-        end,
-    }
+    -- 僵尸菜单列表
+    zombieList = {}
+    for i = 1, ZCLOGLength(zombieTable) do
+        local zombieSkillSignal = zombieTable[i].skillTwoSignal
+        if zombieSkillSignal ~= SignalToUI.undyingSkillGet and zombieSkillSignal ~= SignalToUI.hiddenSkillGet then
+            table.insert(zombieList, zombieTable[i].name)
+            table.insert(zombieList, zombieTable[i].func)
+        end
+    end
 
-    --僵尸菜单热键
+    -- 僵尸菜单热键
     zombieMenuHotKey = {
         hotkey = UI.KEY.M
     }
 
-    --僵尸菜单 TheZombieMenu
+    -- 添加僵尸菜单 TheZombieMenu
     TheZombieMenu = ZombieMenu(zombieList, zombieMenuHotKey);
-
     Frame.mainLayer:add(TheZombieMenu);
 
-    --主要菜单
+    -- 添加主要菜单
     MainMenu = ItemMenu({
         "更多设置", {
             "改变颜色", function()
@@ -1629,11 +1583,10 @@ if UI ~= nil then
             end,
         },
     }, { hotkey = nil });
-
     Frame.mainLayer:add(MainMenu);
 
 
-    --标签
+    -- 标签类
     Class("Lable", function(Lable)
         function Lable:constructor(x, y, width, height, text, attributes)
             self.super(x, y, width, height);
@@ -1683,6 +1636,7 @@ if UI ~= nil then
 
     end, Component);
 
+    -- 输入类
     Class("Input", function(Input)
         function Input:constructor(x, y, width, height, attributes)
             self.super(x, y, width, height);
@@ -1784,6 +1738,7 @@ if UI ~= nil then
 
     end, Lable);
 
+    -- Toast提示类
     Class("Toast", function(Toast)
         Toast.STATIC = true;
         function Toast:makeText(text, length, x, y, layerName, ps)
@@ -1823,6 +1778,7 @@ if UI ~= nil then
 
     end);
 
+    -- 技能幕布类
     Class("SkillMask", function(SkillMask)
         SkillMask.STATIC = true;
         function SkillMask:makeText(text, length, x, y, layerName)
@@ -1869,6 +1825,7 @@ if UI ~= nil then
 
     end);
 
+    -- 编辑器类
     Class("Editor", function(Editor)
         function Editor:constructor(x, y, width, height)
             self.super(x, y, width, height);
@@ -2076,6 +2033,7 @@ if UI ~= nil then
         end
     end, Input);
 
+    -- 消息盒类
     Class("MessageBox", function(MessageBox)
         function MessageBox:constructor(x, y, widht, height, title, text)
             self.super(x, y, widht, height);
@@ -2101,6 +2059,7 @@ if UI ~= nil then
         end
     end, Component);
 
+    -- 消息盒图层类
     Class("MessageBoxLayer", function(MessageBoxLayer)
         function MessageBoxLayer:constructor(title, text)
             self.super();
@@ -2115,6 +2074,7 @@ if UI ~= nil then
         end
     end, Layer);
 
+    -- 对话框类
     Class("Dialog", function(Dialog)
 
         function Dialog:constructor(x, y, widht, height, title, text)
@@ -2152,6 +2112,7 @@ if UI ~= nil then
         end
     end, Component);
 
+    -- 输入盒类
     Class("InputBox", function(MessageBox)
         function MessageBox:constructor(x, y, widht, height, title, text)
             self.super(x, y, widht, height);
@@ -2177,6 +2138,7 @@ if UI ~= nil then
         end
     end, Component);
 
+    -- 图片盒类
     Class("PictureBox", function(PictureBox)
         function PictureBox:constructor(x, y, width, height, bitmap)
             self.super(x, y, width, height);

@@ -1,222 +1,19 @@
--- 从game中发送的，将会被ui接受的信号 如果你有lua基础，你可以酌情修改，如果你没有lua基础，请尽量不要动下面这个表的内容
-SignalToGame = {
-    modelRestore = 0, --模型复原
-    update = 1, --每帧更新
-    toggleView = 2, --视角切换
-    jump = 3, --跳跃
-    move = 4, --移动
-    icarus = 5, --伊卡洛斯
-    switchWeapon = 6, --切换武器
-    getSkill = 7, --获取技能
-    openWeaponInven = 8, --打开背包
-    gKeyUsed = 9, --G键技能
-    sneakReload = 10, --透明换弹显示
-    healthRecover = 11, --恢复生命 对应ui的最后一次攻击
-    infect = 12, --被感染
-    rounderReset = 13, --回合重置
-    land = 14, --落地
-    sprint = 15, --极速飞奔
-    critical = 16, --致命打击
-    --技能获得
-    hpPlusSkillGet = 17, --恢复强化
-    rehydrationSkillGet = 18, --生命补液
-    ironChestSkillGet = 19, --钢铁铠甲
-    deflectArmorSkillGet = 20, --倾斜装甲
-    ironHelmetSkillGet = 21, --钢铁头盔
-    sufferMemorySkillGet = 22, -- 痛苦记忆
-    ironClawSkillGet = 23, --合金利爪
-    touchInfectSkillGet = 24, --接触感染
-    evolutionSkillGet = 25, --进化论
-    adaptabilitySkillGet = 26, --适应力
-    mammothSkillGet = 27, --猛犸
-    repairSkillGet = 28, --组织再生
-    sneakReloadSkillGet = 29, --透明换弹
-    quickReloadSkillGet = 30, --高速填装
-    backClipSkillGet = 31, --备弹补充
-    recycleSkillGet = 32, --弹夹回收
-    kangarooSkillGet = 33, --袋鼠
-    cheetahSkillGet = 34, --猎豹
-    assaultSkillGet = 35, --正面突击
-    forwardSkillGet = 36, --冲锋推进
-    sprintSkillGet = 37, --极速飞奔
-    criticalSkillGet = 38, --致命打击
-    heroSkillGet = 39, --英雄出现
-    edgeSkillGet = 40, --利刃
-    shooterSkillGet = 41, --神枪手
-    --技能获得结束
-    quickReload = 42, --高速填装
-    sneakQuickReloadSuspend = 43, --透明换弹或高速填装特效中止
-    shooterCrosshairShow = 44, --神枪手准心显示
-    shooterCrosshairHide = 45, --神枪手准心隐藏
-    icarusSkillGet = 46, --男性僵尸伊卡洛斯
-    doubleJumpSkillGet = 47, --女性僵尸二段跳
-    chosenHero = 48, --选为英雄
-    --僵尸代号 50开始
-    S_Zombie_Model_Normal = 50, --普通僵尸(30)
-    S_Zombie_Model_Light = 51, --暗影芭比
-    S_Zombie_Model_Heavy = 52, --憎恶屠夫
-    S_Zombie_Model_Phycho = 53, --迷雾鬼影
-    S_Zombie_Model_Voodoo = 54, --巫蛊术尸
-    S_Zombie_Model_Deimos = 55, --恶魔之子
-    S_Zombie_Model_Ganymade = 56, --恶魔猎手
-    S_Zombie_Model_Stamper = 57, --送葬者
-    S_Zombie_Model_Banshee = 58, --嗜血女妖
-    S_Zombie_Model_Venomguard = 59, --腐败暴君
-    S_Zombie_Model_Stingfinger = 60, --痛苦女王
-    S_Zombie_Model_Metatron = 61, --暴虐钢骨
-    S_Zombie_Model_Lilith = 62, --幻痛夜魔
-    S_Zombie_Model_Chaser = 63, --追猎傀儡
-    S_Zombie_Model_Blotter = 64, --爆弹狂魔
-    S_Zombie_Model_Rustywing = 65, --断翼恶灵
-    S_Zombie_Model_Aksha = 66, --赤炎恶鬼(46)
-    --僵尸代号结束
-    --僵尸技能
-    induration = 67, --硬化
-    lurk = 68, --潜伏
-    ghostHand = 69, --鬼手
-    cure = 70, --治愈
-    shock = 71, --震荡
-    firmly = 72, --坚定向前
-    impact = 73, --冲击
-    trap = 74, --诱捕
-    feedback = 75, --反馈
-    leap = 76, --飞跃
-    undying = 77, --免死
-    hidden = 78, --缠身
-    --僵尸技能结束
-    --僵尸技能获得
-    indurationSkillGet = 79, --硬化
-    lurkSkillGet = 80, --潜伏
-    ghostHandSkillGet = 81, --鬼手
-    cureSkillGet = 82, --治愈
-    shockSkillGet = 83, --震荡
-    firmlySkillGet = 84, --坚定向前
-    impactSkillGet = 85, --冲击
-    trapSkillGet = 86, --诱捕
-    feedbackSkillGet = 87, --反馈
-    leapSkillGet = 88, --飞跃
-    undyingSkillGet = 89, --免死
-    hiddenSkillGet = 90, --缠身
-    destructionSkillGet = 91, --自爆
-    --僵尸技能获得结束
-    undyingLoseControl = 92, --免死技能时失去控制权
-    undyingGetControl = 93, --免死技能时获得控制权
-    escapeSuccess = 94, --逃脱成功
-    escapeFail = 95, --逃脱失败
-    speedChangedImpact = 96, --冲击减速
-    speedChangedGhostHand = 97 --鬼手定身
+-- 游戏初始化数值设定
+gameInitializeData = {
+    -- 在这里设定你想要一回合游戏持续多久，单位是秒(例如填480，即表示每一回合持续时间480秒，也就是8分钟，不包括开局选母体的时间)
+    roundTime = 480,
+    -- 在这里设定你想要多久选出母体，单位是秒(注意，这里甜的时间要和游戏里时间装置方块里填的时间数值相等)
+    readyTime = 20,
+    -- 在这里设定你想要游戏时间持续多久，单位是秒
+    totalGameTime = 1800,
+    -- 在这里设定最高回合数是多少
+    totalRoundNumber = 5,
+    -- 在这里设定是否只计算胜利的回合数(true 或者 false)
+    -- (Q：这是什么意思呢？A：意思是如果值为true则只计算胜利回合数，也就是一定要人类或者僵尸任意一方胜利局数大于总局数，游戏才会结束，如果值为false，那么只要游戏回合数超过总回合数，游戏就结束)
+    roundNeedWin = false,
+    -- 在这里设定升级所需的经验值
+    playerLevelUpExp = 5000
 }
-
-
--- 从ui中发送的，将会被game接受的信号 如果你有lua基础，你可以酌情修改，如果你没有lua基础，请尽量不要动下面这个表的内容
-SignalToUI = {
-    modelRestore = 0, --模型复原
-    update = 1, --每帧更新
-    toggleView = 2, --视角切换
-    jump = 3, --跳跃
-    move = 4, --移动
-    icarus = 5, --伊卡洛斯
-    switchWeapon = 6, --切换武器
-    getSkill = 7, --获取技能
-    openWeaponInven = 8, --打开背包
-    gKeyUsed = 9, --G键技能
-    sneakReload = 10, --透明换弹
-    lastAttack = 11, --最后一次被攻击 对应game的恢复生命
-    infect = 12, --被感染
-    rounderReset = 13, --回合重置
-    land = 14, --落地
-    sprint = 15, --极速飞奔
-    critical = 16, --致命打击
-    --技能获得
-    hpPlusSkillGet = 17, --恢复强化
-    rehydrationSkillGet = 18, --生命补液
-    ironChestSkillGet = 19, --钢铁铠甲
-    deflectArmorSkillGet = 20, --倾斜装甲
-    ironHelmetSkillGet = 21, --钢铁头盔
-    sufferMemorySkillGet = 22, -- 痛苦记忆
-    ironClawSkillGet = 23, --合金利爪
-    touchInfectSkillGet = 24, --接触感染
-    evolutionSkillGet = 25, --进化论
-    adaptabilitySkillGet = 26, --适应力
-    mammothSkillGet = 27, --猛犸
-    repairSkillGet = 28, --组织再生
-    sneakReloadSkillGet = 29, --透明换弹
-    quickReloadSkillGet = 30, --高速填装
-    backClipSkillGet = 31, --备弹补充
-    recycleSkillGet = 32, --弹夹回收
-    kangarooSkillGet = 33, --袋鼠
-    cheetahSkillGet = 34, --猎豹
-    assaultSkillGet = 35, --正面突击
-    forwardSkillGet = 36, --冲锋推进
-    sprintSkillGet = 37, --极速飞奔
-    criticalSkillGet = 38, --致命打击
-    heroSkillGet = 39, --英雄出现
-    edgeSkillGet = 40, --利刃
-    shooterSkillGet = 41, --神枪手
-    --技能获得结束
-    quickReload = 42, --高速填装
-    sneakQuickReloadSuspend = 43, --透明换弹或高速填装特效中止
-    shooterCrosshairShow = 44, --神枪手准心显示
-    shooterCrosshairHide = 45, --神枪手准心隐藏
-    icarusSkillGet = 46, --男性僵尸伊卡洛斯
-    doubleJumpSkillGet = 47, --女性僵尸二段跳
-    chosenHero = 48, --选为英雄
-    --僵尸代号 50开始
-    S_Zombie_Model_Normal = 50, --普通僵尸(30)
-    S_Zombie_Model_Light = 51, --暗影芭比
-    S_Zombie_Model_Heavy = 52, --憎恶屠夫
-    S_Zombie_Model_Phycho = 53, --迷雾鬼影
-    S_Zombie_Model_Voodoo = 54, --巫蛊术尸
-    S_Zombie_Model_Deimos = 55, --恶魔之子
-    S_Zombie_Model_Ganymade = 56, --恶魔猎手
-    S_Zombie_Model_Stamper = 57, --送葬者
-    S_Zombie_Model_Banshee = 58, --嗜血女妖
-    S_Zombie_Model_Venomguard = 59, --腐败暴君
-    S_Zombie_Model_Stingfinger = 60, --痛苦女王
-    S_Zombie_Model_Metatron = 61, --暴虐钢骨
-    S_Zombie_Model_Lilith = 62, --幻痛夜魔
-    S_Zombie_Model_Chaser = 63, --追猎傀儡
-    S_Zombie_Model_Blotter = 64, --爆弹狂魔
-    S_Zombie_Model_Rustywing = 65, --断翼恶灵
-    S_Zombie_Model_Aksha = 66, --赤炎恶鬼(46)
-    --僵尸代号结束
-    --僵尸技能
-    induration = 67, --硬化
-    lurk = 68, --潜伏
-    cure = 69, --治愈
-    firmly = 70, --坚定向前
-    impact = 71, --冲击
-    feedback = 72, --反馈
-    ghostHand = 73, --鬼手
-    undying = 74, --免死
-    shock = 75, --震荡
-    trap = 76, --诱捕
-    hidden = 77, --缠身
-    leap = 78, --飞跃
-    --僵尸技能结束
-    --僵尸技能获得
-    indurationSkillGet = 79, --硬化
-    lurkSkillGet = 80, --潜伏
-    ghostHandSkillGet = 81, --鬼手
-    cureSkillGet = 82, --治愈
-    shockSkillGet = 83, --震荡
-    firmlySkillGet = 84, --坚定向前
-    impactSkillGet = 85, --冲击
-    trapSkillGet = 86, --诱捕
-    feedbackSkillGet = 87, --反馈
-    leapSkillGet = 88, --飞跃
-    undyingSkillGet = 89, --免死
-    hiddenSkillGet = 90, --缠身
-    destructionSkillGet = 91, --自爆
-    --僵尸技能获得结束
-    undyingLoseControl = 92, --免死技能时失去控制权
-    undyingGetControl = 93, --免死技能时获得控制权
-    escapeSuccess = 94, --逃脱成功
-    escapeFail = 95, --逃脱失败
-    speedChangedImpact = 96, --冲击减速
-    speedChangedGhostHand = 97 --鬼手定身
-}
-
 
 -- 购买列表包含的武器(同时也是你能获取到id并且修改属性的武器，不包含在这里的武器可能可以在游戏里拿出来，但是属性不能修改)
 validateGunsList = {
@@ -339,8 +136,6 @@ validateGunsList = {
     Common.WEAPON.OICW  --尖端
 }
 
-
-
 -- 武器品质
 weaponLevel = {
     normal = 0, -- 普通品质
@@ -350,7 +145,6 @@ weaponLevel = {
     legend = 4, -- 传奇品质
     divine = 5 -- 神圣品质
 }
-
 
 -- 按键设置
 keyboardKeyList = {
@@ -564,6 +358,10 @@ humanSkillTableEx = {
 zombieTable = {
     {
         -- 普通僵尸 水泥工
+        name = "普通", -- 水泥工在僵尸菜单中显示的名称
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Normal)
+        end, -- 水泥工在僵尸菜单中生效的函数
         maxhealth = 40000, -- 水泥工的最高生命值
         maxarmor = 8000, -- 水泥工的最高护甲值
         flinch = 1, -- 水泥工的定身系数(倍率，越高定身越不明显)
@@ -581,6 +379,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.indurationSkillGet -- 发送水泥工获得了模型绑定的硬化技能的信号
     }, {
         -- 暗影芭比
+        name = "芭比",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Light)
+        end,
         maxhealth = 20000,
         maxarmor = 4000,
         flinch = 1,
@@ -598,6 +400,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.lurkSkillGet -- 芭比潜伏技能
     }, {
         -- 憎恶屠夫 达叔
+        name = "屠夫",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Heavy)
+        end,
         maxhealth = 60000,
         maxarmor = 10000,
         flinch = 1,
@@ -615,6 +421,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.ghostHandSkillGet -- 胖子鬼手技能
     }, {
         -- 迷雾鬼影 懒狗僵尸
+        name = "迷雾",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Phycho)
+        end,
         maxhealth = 30000,
         maxarmor = 6000,
         flinch = 1,
@@ -632,6 +442,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.lurkSkillGet -- 和水泥工一样的硬化技能
     }, {
         -- 巫蛊术尸 男妈妈
+        name = "巫蛊",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Voodoo)
+        end,
         maxhealth = 30000,
         maxarmor = 6000,
         flinch = 0.8,
@@ -649,6 +463,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.cureSkillGet -- 男妈妈咒愈技能
     }, {
         -- 恶魔之子 小表弟
+        name = "恶魔",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Deimos)
+        end,
         maxhealth = 25000,
         maxarmor = 6000,
         flinch = 0.8,
@@ -666,6 +484,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.shockSkillGet -- 小表弟震荡技能
     }, {
         -- 恶魔猎手 大表哥
+        name = "猎手",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Ganymade)
+        end,
         maxhealth = 45000,
         maxarmor = 8000,
         flinch = 0.8,
@@ -683,6 +505,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.firmlySkillGet -- 大表哥坚定向前技能
     }, {
         -- 送葬者 棺材
+        name = "送葬",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Stamper)
+        end,
         maxhealth = 55000,
         maxarmor = 8000,
         flinch = 0.8,
@@ -700,6 +526,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.impactSkillGet -- 棺材冲击技能
     }, {
         -- 嗜血女妖 奶奶
+        name = "女妖",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Banshee)
+        end,
         maxhealth = 25000,
         maxarmor = 8000,
         flinch = 0.8,
@@ -717,6 +547,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.trapSkillGet -- 奶奶诱捕技能
     }, {
         -- 腐化禁卫 肿瘤崽
+        name = "禁卫",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Venomguard)
+        end,
         maxhealth = 35000,
         maxarmor = 8000,
         flinch = 0.7,
@@ -734,6 +568,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.destructionSkillGet -- 肿瘤崽自爆技能
     }, {
         -- 痛苦女王 长手
+        name = "女王",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Stingfinger)
+        end,
         maxhealth = 25000,
         maxarmor = 4000,
         flinch = 0.8,
@@ -751,6 +589,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.leapSkillGet -- 女王飞跃技能
     }, {
         -- 暴虐钢骨 男英雄僵尸
+        name = "钢骨",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Metatron)
+        end,
         maxhealth = 80000,
         maxarmor = 8000,
         flinch = 0.8,
@@ -768,6 +610,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.undyingSkillGet -- 男英雄僵尸不朽技能
     }, {
         -- 幻痛夜魔 女英雄僵尸
+        name = "夜魔",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Lilith)
+        end,
         maxhealth = 40000,
         maxarmor = 4000,
         flinch = 0.5,
@@ -785,6 +631,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.hiddenSkillGet -- 女英雄僵尸缠身技能
     }, {
         -- 追猎傀儡 凳子骑
+        name = "傀儡",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Chaser)
+        end,
         maxhealth = 25000,
         maxarmor = 2000,
         flinch = 0.5,
@@ -802,6 +652,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.leapSkillGet -- 凳子骑飞跃技能
     }, {
         -- 爆弹狂魔 蔡徐坤
+        name = "狂魔",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Blotter)
+        end,
         maxhealth = 45000,
         maxarmor = 5000,
         flinch = 0.7,
@@ -819,6 +673,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.feedbackSkillGet -- 蔡徐坤反馈技能
     }, {
         -- 断翼恶灵 蔡依林
+        name = "恶灵",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Rustywing)
+        end,
         maxhealth = 30000,
         maxarmor = 5000,
         flinch = 0.5,
@@ -836,6 +694,10 @@ zombieTable = {
         skillTwoSignal = SignalToUI.leapSkillGet -- 蔡依林飞跃技能
     }, {
         -- 赤炎恶鬼 赤酱
+        name = "恶鬼",
+        func = function()
+            UI.Signal(SignalToGame.S_Zombie_Model_Aksha)
+        end,
         maxhealth = 50000,
         maxarmor = 10000,
         flinch = 0.8,
@@ -853,3 +715,4 @@ zombieTable = {
         skillTwoSignal = SignalToUI.feedbackSkillGet -- 赤酱反馈技能
     }
 }
+
