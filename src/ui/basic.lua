@@ -1211,27 +1211,17 @@ if UI ~= nil then
 
     Class("ZombieMenu", function(ZombieMenu)
         function ZombieMenu:constructor(itemTree, attributes)
-            -- print("走到itemTree这里了 = ", itemTree)
-            -- ZCLOG(itemTree)
-            -- ZCLOG(attributes)
-
             self.super(30, 100, 200, 100);
             self.root = Item("ZombieMenu", itemTree);
-
             self.isvisible = false;
-
             self.page = 1;
             self.cursor = self.root;
-
             self.lineheight = 30;
             self.letterspacing = 3;
-
             self.font = Song;
             self.fontcolor = { 0, 0, 0, 255 };
             self.pixelsize = 2;
-
             self.hotkey = UI.KEY.M;
-
             if attributes ~= nil then
                 for key, value in pairs(attributes) do
                     if self[key] ~= nil then
@@ -1248,10 +1238,6 @@ if UI ~= nil then
         --代码呼叫
         function ZombieMenu:showHostMenu()
             self.fontcolor = { 0, 255, 0, 200 };
-
-            -- Frame.mainLayer:remove(TheZombieMenu);
-            -- Frame.mainLayer:add(TheZombieMenu);
-
             if self.isvisible == true then
                 self:hide();
             else
@@ -1259,9 +1245,6 @@ if UI ~= nil then
                 self.cursor = self.root;
                 self:show();
             end
-            -- return;
-
-
         end
 
         --按键呼叫
@@ -1570,83 +1553,82 @@ if UI ~= nil then
     Frame.mainLayer:add(TheZombieMenu);
 
     --主要菜单
-    MainMenu = ItemMenu(
-            { "更多设置", {
-                "改变颜色", function()
-                    MainMenu.fontcolor = { math.random(255), math.random(255), math.random(255), 255 };
-                    return false;
-                end,
-                "字号加大", function()
-                    MainMenu.pixelsize = MainMenu.pixelsize + 1;
-                    return false;
-                end,
-                "字号减小", function()
-                    if MainMenu.pixelsize > 1 then
-                        MainMenu.pixelsize = MainMenu.pixelsize - 1;
-                    end
-                    return false;
-                end,
-                "左移", function()
-                    MainMenu.x = MainMenu.x - 10;
-                    return false;
-                end,
-                "右移", function()
-                    MainMenu.x = MainMenu.x + 10;
-                    return false;
-                end,
-                "加大行距", function()
-                    MainMenu.lineheight = MainMenu.lineheight + 5;
-                    return false;
-                end,
-                "缩小行距", function()
-                    MainMenu.lineheight = MainMenu.lineheight - 5;
-                    return false;
-                end,
-                "关闭", function()
-                end,
-            },
-              "动画效果",
-              {
-                  "改变颜色", function()
-                  MainMenu:animate({
-                      { table = MainMenu.fontcolor, key = 1, value = math.random(255) },
-                      { table = MainMenu.fontcolor, key = 2, value = math.random(255) },
-                      { table = MainMenu.fontcolor, key = 3, value = math.random(255) } },
-                          120);
-                  return false;
-              end,
-                  "x=300", function()
-                  MainMenu:animate({
-                      { key = "x", value = 300 } },
-                          120);
-                  return false;
-              end,
-                  "x=0", function()
-                  MainMenu:animate({
-                      { key = "x", value = 0 } },
-                          120);
-                  return false;
-              end,
-                  "行高", function()
-                  MainMenu:animate({
-                      { key = "lineheight", value = math.random(50) } },
-                          120);
-                  return false;
-              end,
-                  "随机字号", function()
-                  local ran = math.random(2) + 1;
-                  MainMenu:animate({
-                      { key = "pixelsize", value = ran } },
-                          80);
-                  return false;
-              end,
-              },
-              "帮助", {
-                  "关于", function()
-                    Toast:makeText("");
-                end,
-              },
-            }, { hotkey = nil });
+    MainMenu = ItemMenu({
+        "更多设置", {
+            "改变颜色", function()
+                MainMenu.fontcolor = { math.random(255), math.random(255), math.random(255), 255 };
+                return false;
+            end,
+            "字号加大", function()
+                MainMenu.pixelsize = MainMenu.pixelsize + 1;
+                return false;
+            end,
+            "字号减小", function()
+                if MainMenu.pixelsize > 1 then
+                    MainMenu.pixelsize = MainMenu.pixelsize - 1;
+                end
+                return false;
+            end,
+            "左移", function()
+                MainMenu.x = MainMenu.x - 10;
+                return false;
+            end,
+            "右移", function()
+                MainMenu.x = MainMenu.x + 10;
+                return false;
+            end,
+            "加大行距", function()
+                MainMenu.lineheight = MainMenu.lineheight + 5;
+                return false;
+            end,
+            "缩小行距", function()
+                MainMenu.lineheight = MainMenu.lineheight - 5;
+                return false;
+            end,
+            "关闭", function()
+            end,
+        },
+        "动画效果", {
+            "改变颜色", function()
+                MainMenu:animate({
+                    { table = MainMenu.fontcolor, key = 1, value = math.random(255) },
+                    { table = MainMenu.fontcolor, key = 2, value = math.random(255) },
+                    { table = MainMenu.fontcolor, key = 3, value = math.random(255) } },
+                        120);
+                return false;
+            end,
+            "x=300", function()
+                MainMenu:animate({
+                    { key = "x", value = 300 } },
+                        120);
+                return false;
+            end,
+            "x=0", function()
+                MainMenu:animate({
+                    { key = "x", value = 0 } },
+                        120);
+                return false;
+            end,
+            "行高", function()
+                MainMenu:animate({
+                    { key = "lineheight", value = math.random(50) } },
+                        120);
+                return false;
+            end,
+            "随机字号", function()
+                local ran = math.random(2) + 1;
+                MainMenu:animate({
+                    { key = "pixelsize", value = ran } },
+                        80);
+                return false;
+            end,
+        },
+        "帮助", {
+            "关于", function()
+                Toast:makeText("");
+            end,
+        },
+    }, { hotkey = nil });
 
     Frame.mainLayer:add(MainMenu);
 
@@ -1657,7 +1639,6 @@ if UI ~= nil then
             self.super(x, y, width, height);
             self.offx = 0;
             self.offy = 0;
-
             self.font = Song;
             self.pixelsize = 2;
             self.letterspacing = 5;
@@ -2212,12 +2193,4 @@ if UI ~= nil then
 
 
 end
-
-
-----------------------------------------------------
-----------------------------------------------------
-----------------------------------------------------
-
-
-
 

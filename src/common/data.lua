@@ -103,6 +103,8 @@ SignalToGame = {
     undyingGetControl = 93, --免死技能时获得控制权
     escapeSuccess = 94, --逃脱成功
     escapeFail = 95, --逃脱失败
+    speedChangedImpact = 96, --冲击减速
+    speedChangedGhostHand = 97 --鬼手定身
 }
 
 
@@ -211,6 +213,8 @@ SignalToUI = {
     undyingGetControl = 93, --免死技能时获得控制权
     escapeSuccess = 94, --逃脱成功
     escapeFail = 95, --逃脱失败
+    speedChangedImpact = 96, --冲击减速
+    speedChangedGhostHand = 97 --鬼手定身
 }
 
 

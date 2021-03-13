@@ -99,6 +99,9 @@ icarusCoolDownTime = UI.GetTime() --伊卡洛斯冷却时间
 zombieSpecialSkillCoolDownReady = true --僵尸技能冷却完毕
 zombieSpecialSkillDurationTime = UI.GetTime() --僵尸技能持续时间
 zombieSpecialSkillCoolDownTime = UI.GetTime() --僵尸技能冷却时间
+
+speedChangedImpactTime = UI.GetTime() --冲击减速时间
+speedChangedGhostHandTime = UI.GetTime() --冲击减速时间
 --ui game 交互变量
 
 --仅限ui交互变量
@@ -749,12 +752,6 @@ function UI.Event:OnUpdate(time)
 
     --僵尸模块
     if youAreZombie == true then
-        --恢复生命
-        if recoverTime <= time then
-            UI.Signal(SignalToGame.healthRecover)
-            recoverTime = time + 1
-        end
-        --恢复生命结束
         --伊卡洛斯冷却
         if icarusCoolDownReady == false then
             local theIcarusCoolDownBG = skillCoolDonwBGTable[6]
@@ -903,12 +900,22 @@ function UI.Event:OnUpdate(time)
         end
     end
 
+    --冲击减速
+    if time <= speedChangedImpactTime then
+        UI.Signal(SignalToGame.speedChangedImpact)
+    end
+
+    --鬼手定身
+    if time <= speedChangedGhostHandTime then
+        UI.Signal(SignalToGame.speedChangedGhostHand)
+    end
+
 end
 
 --玩家信号
 function UI.Event:OnSignal(signal)
 
-    local UITime = UI.GetTime()
+    local uiTime = UI.GetTime()
 
     --回合重置
     if signal == SignalToUI.rounderReset then
@@ -918,21 +925,21 @@ function UI.Event:OnSignal(signal)
             skillBox:Hide()
         end
         --透明换弹、高速填装CD时间
-        sneakReloadCoolDownTime = UITime + READY_TIME
-        quickReloadCoolDownTime = UITime + READY_TIME
+        sneakReloadCoolDownTime = uiTime + READY_TIME
+        quickReloadCoolDownTime = uiTime + READY_TIME
 
         --极速飞奔还原
         if sprintBox ~= nil then
             sprintBox:Hide()
         end
-        sprintDurationTime = UITime
-        sprintCDTime = UITime + READY_TIME
+        sprintDurationTime = uiTime
+        sprintCDTime = uiTime + READY_TIME
         --致命打击还原
         if criticalBox ~= nil then
             criticalBox:Hide()
         end
-        criticalDurationTime = UITime
-        criticalCDTime = UITime + READY_TIME
+        criticalDurationTime = uiTime
+        criticalCDTime = uiTime + READY_TIME
 
         --技能幕布绘制
         if thisIsYourFirstRound == true then
@@ -977,14 +984,14 @@ function UI.Event:OnSignal(signal)
     --显示透明换弹技能提示
     if signal == SignalToUI.sneakReload then
         skillBoxTip(0, 100, 100, 50)
-        sneakReloadCoolDownTime = UITime + 10
+        sneakReloadCoolDownTime = uiTime + 10
         sneakReloadCoolDownReady = false
     end
 
     --显示高速填装技能提示
     if signal == SignalToUI.quickReload then
         skillBoxTip(65, 150, 225, 50)
-        quickReloadCoolDownTime = UITime + 10
+        quickReloadCoolDownTime = uiTime + 10
         quickReloadCoolDownReady = false
     end
 
@@ -995,24 +1002,24 @@ function UI.Event:OnSignal(signal)
     if signal >= SignalToUI.induration and signal <= SignalToUI.leap then
         local theSignal = signal
         skillBoxTip(255, 25, 50, 50)
-        zombieSpecialSkillCoolDownTime = UITime + 20
+        zombieSpecialSkillCoolDownTime = uiTime + 20
         zombieSpecialSkillCoolDownReady = false
         if theSignal >= SignalToUI.induration and signal <= SignalToUI.feedback then
             --持续时长为10秒的僵尸技能
-            zombieSpecialSkillDurationTime = UITime + 10
+            zombieSpecialSkillDurationTime = uiTime + 10
         elseif theSignal >= SignalToUI.ghostHand and theSignal <= SignalToUI.hidden then
             --持续时长为3秒的僵尸技能
-            zombieSpecialSkillDurationTime = UITime + 3
+            zombieSpecialSkillDurationTime = uiTime + 3
         else
             --持续时长为1秒的僵尸技能
-            zombieSpecialSkillDurationTime = UITime + 1
+            zombieSpecialSkillDurationTime = uiTime + 1
         end
 
     end
 
     --最后一次被攻击
     if signal == SignalToUI.lastAttack then
-        recoverTime = UITime + 5
+        recoverTime = uiTime + 5
     end
 
     --僵尸感染
@@ -1048,7 +1055,7 @@ function UI.Event:OnSignal(signal)
     --伊卡洛斯滑翔
     if signal == SignalToUI.icarus then
         icarusCoolDownReady = false
-        icarusCoolDownTime = UITime + 3
+        icarusCoolDownTime = uiTime + 3
     end
 
     --落地
@@ -1058,16 +1065,16 @@ function UI.Event:OnSignal(signal)
     --极速飞奔
     if signal == SignalToUI.sprint then
         sprintBoxTip(200, 200, 200, 100)
-        sprintDurationTime = UITime + 10
-        sprintCDTime = UITime + 60
+        sprintDurationTime = uiTime + 10
+        sprintCDTime = uiTime + 60
         sprintCoolDownReady = false
     end
 
     --致命打击
     if signal == SignalToUI.critical then
         criticalBoxTip(250, 250, 210, 100)
-        criticalDurationTime = UITime + 10
-        criticalCDTime = UITime + 60
+        criticalDurationTime = uiTime + 10
+        criticalCDTime = uiTime + 60
         criticalCoolDownReady = false
     end
 
@@ -1135,6 +1142,15 @@ function UI.Event:OnSignal(signal)
             closeToastOnScreen()
             makeToastOnScreen("逃脱失败：你将永远留在这里", 2, nil, nil, (screen.height * 0.5) - 100, "回合结束", 5)
         end
+    end
+
+    --冲击减速
+    if signal == SignalToUI.speedChangedImpact then
+        speedChangedImpactTime = uiTime + 8
+    end
+    --鬼手定身
+    if signal == SignalToUI.speedChangedGhostHand then
+        speedChangedGhostHandTime = uiTime + 3
     end
 
 end

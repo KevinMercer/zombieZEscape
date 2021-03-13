@@ -127,40 +127,40 @@ function Game.Rule:OnUpdate (time)
         if players[i] then
 
             --通用模块
-            local thePlayer = players[i]
+            local player = players[i]
             local pUser = players[i].user
 
             --发枪
             if pUser.firstJoin == true then
                 if pUser.giveGunTime ~= nil and pUser.giveGunTime <= time then
                     pUser.giveGunTime = nil
-                    giveInitialGun(thePlayer)
+                    giveInitialGun(player)
                 end
             end
 
             --玩家地速开始
-            pUser.speed = getSpeed(thePlayer)
+            pUser.speed = getSpeed(player)
             if speedPanelTable[i] ~= nil then
-                speedPanelTable[i].value = getSpeed(thePlayer)
+                speedPanelTable[i].value = getSpeed(player)
             end
 
             --玩家地速结束
 
             --玩家恢复控制权
-            if pUser.static == true and pUser.staticTime ~= nil then
-                if pUser.staticTime >= time then
-                    playerSpeedStatic(thePlayer)
-                else
-                    pUser.static = false
-                end
-            end
+            --if pUser.static == true and pUser.staticTime ~= nil then
+            --    if pUser.staticTime >= time then
+            --        playerSpeedStatic(thePlayer)
+            --    else
+            --        pUser.static = false
+            --    end
+            --end
             --玩家恢复控制权结束
 
             --致命打击结束
             if pUser.criticaling == true then
                 if pUser.criticalDurationTime <= time then
                     pUser.criticaling = false
-                    thePlayer:SetRenderFX(playerRenderFx.normal)
+                    player:SetRenderFX(playerRenderFx.normal)
                     pUser.renderFx = playerRenderFx.normal
                 end
             end
@@ -168,9 +168,9 @@ function Game.Rule:OnUpdate (time)
             if pUser.sprinting == true and pUser.speedRateBeforeSprint ~= nil then
                 if pUser.sprintDurationTime <= time then
                     pUser.sprinting = false
-                    speedReduction(thePlayer, 0.2)
+                    speedReduction(player, 0.2)
                     pUser.speedRateBeforeSprint = nil
-                    thePlayer:SetRenderFX(playerRenderFx.normal)
+                    player:SetRenderFX(playerRenderFx.normal)
                     pUser.renderFx = playerRenderFx.normal
                 end
             end
@@ -182,17 +182,17 @@ function Game.Rule:OnUpdate (time)
     --僵尸模块
     for i = 1, 24 do
         if currentRoundZombiePlayerList[i] ~= nil then
-            local thePlayer = currentRoundZombiePlayerList[i]
-            local pUser = thePlayer.user
+            local player = currentRoundZombiePlayerList[i]
+            local pUser = player.user
             --僵尸模块
             if pUser.zombie == true then
                 --二段跳开始
                 if pUser.jumpLevel ~= nil and pUser.jumpLevel > 1 then
-                    if thePlayer.velocity.z == 0 then
+                    if player.velocity.z == 0 then
                         pUser.jumped = 0    --落地重置
                         pUser.isUp = false
                     else
-                        if thePlayer.velocity.z > 0 then
+                        if player.velocity.z > 0 then
                             pUser.isUp = true
                         end
                         if pUser.jumped == 0 then
@@ -207,7 +207,7 @@ function Game.Rule:OnUpdate (time)
                 --伊卡洛斯开始
                 if pUser.canIcraus and pUser.zombie then
 
-                    if thePlayer.velocity.z == 0 then
+                    if player.velocity.z == 0 then
 
                         pUser.icarus = true --落地重置
                         pUser.isUp = false
@@ -216,7 +216,7 @@ function Game.Rule:OnUpdate (time)
                             pUser.icarusCD = time + 3
                         end
                     else
-                        if thePlayer.velocity.z > 0 then
+                        if player.velocity.z > 0 then
                             pUser.isUp = true
                         end
                     end
@@ -224,24 +224,24 @@ function Game.Rule:OnUpdate (time)
                 --伊卡洛斯结束
 
                 --呼吸回血
-                -- if pUser.recover and pUser.zombie then
-                -- if thePlayer.health <= thePlayer.maxhealth and pUser.recoverTime ~= nil and pUser.recoverTime <= time then
-                -- if thePlayer.health + 500 <= thePlayer.maxhealth then
-                -- thePlayer.health = thePlayer.health + 500
-                -- else
-                -- thePlayer.health = thePlayer.maxhealth
-                -- end
-                -- pUser.recoverTime = time + 1
-                -- end
-                -- end
+                if pUser.recover and pUser.zombie then
+                    if player.health <= player.maxhealth and pUser.recoverTime ~= nil and pUser.recoverTime <= time then
+                        if player.health + 500 <= player.maxhealth then
+                            player.health = player.health + 500
+                        else
+                            player.health = player.maxhealth
+                        end
+                        pUser.recoverTime = time + 1
+                    end
+                end
                 --呼吸回血结束
 
                 --恢复玩家渲染方式
                 if pUser.renderFx ~= playerRenderFx.normal then
                     if pUser.zombie == true and pUser.zombieExclusiveSkillDuration ~= nil and pUser.zombieExclusiveSkillDuration <= time then
-                        thePlayer:SetRenderFX(playerRenderFx.normal)
+                        player:SetRenderFX(playerRenderFx.normal)
                         pUser.renderFx = playerRenderFx.normal
-                        thePlayer:Signal(SignalToUI.modelRestore)
+                        player:Signal(SignalToUI.modelRestore)
                         if pUser.zombieExclusiveSkill == 36 then
                             player.knockback = 1.5
                         end
@@ -253,13 +253,13 @@ function Game.Rule:OnUpdate (time)
                 if pUser.zombieExclusiveSkill == 31 then
                     if pUser.zombieExclusiveSkillDuration ~= nil and pUser.zombieExclusiveSkillDuration >= time then
                         if pUser.speed <= 150 then
-                            thePlayer:SetRenderFX(playerRenderFx.sneak)
+                            player:SetRenderFX(playerRenderFx.sneak)
                             pUser.renderFx = playerRenderFx.sneak
-                            thePlayer:Signal(SignalToUI.gKeyUsed)
+                            player:Signal(SignalToUI.gKeyUsed)
                         else
-                            thePlayer:SetRenderFX(playerRenderFx.normal)
+                            player:SetRenderFX(playerRenderFx.normal)
                             pUser.renderFx = playerRenderFx.normal
-                            thePlayer:Signal(SignalToUI.modelRestore)
+                            player:Signal(SignalToUI.modelRestore)
                         end
                     end
                 end
@@ -267,10 +267,10 @@ function Game.Rule:OnUpdate (time)
                 --巫蛊术尸恢复生命
                 if pUser.zombieExclusiveSkill == 34 then
                     if pUser.zombieExclusiveSkillDuration ~= nil and pUser.zombieExclusiveSkillDuration >= time then
-                        if thePlayer.health + 50 >= thePlayer.maxhealth then
-                            thePlayer.health = thePlayer.maxhealth
+                        if player.health + 50 >= player.maxhealth then
+                            player.health = player.maxhealth
                         else
-                            thePlayer.health = thePlayer.health + 50
+                            player.health = player.health + 50
                         end
                     end
                 end
@@ -282,7 +282,7 @@ function Game.Rule:OnUpdate (time)
                         local touchHuman = currentRoundHumanPlayerList[j]
                         if touchHuman ~= nil then
                             local touchHumanUser = touchHuman.user
-                            if touchHuman.position.x == thePlayer.position.x and touchHuman.position.y == thePlayer.position.y and (touchHuman.position.z == thePlayer.position.z or touchHuman.position.z == (thePlayer.position.z + 1)) then
+                            if touchHuman.position.x == player.position.x and touchHuman.position.y == player.position.y and (touchHuman.position.z == player.position.z or touchHuman.position.z == (player.position.z + 1)) then
                                 touchHumanUser.zombie = true
                                 touchHumanUser.useInfectionPosition = true
                                 touchHumanUser.infectionPosition = touchHuman.position
@@ -299,7 +299,7 @@ function Game.Rule:OnUpdate (time)
 
                 --免死开始
                 if pUser.undying == true and pUser.undyingTime <= time then
-                    thePlayer:Signal(SignalToUI.undyingGetControl)
+                    player:Signal(SignalToUI.undyingGetControl)
                     pUser.undying = false
                 end
                 --免死结束
@@ -308,21 +308,6 @@ function Game.Rule:OnUpdate (time)
         end
     end
     --僵尸模块结束
-    --人类模块
-    for i = 1, 24 do
-        local thePlayer = currentRoundHumanPlayerList[i]
-        if thePlayer ~= nil then
-            local pUser = thePlayer.user
-            if pUser.speedImpact == true and pUser.speedImpactTime ~= nil then
-                if pUser.speedImpactTime >= time then
-                    playerSpeedImpact(thePlayer)
-                else
-                    pUser.speedImpact = false
-                end
-            end
-        end
-    end
-    --人类模块结束
 
     --回合信息
 
@@ -596,6 +581,7 @@ function returnWeapons(player)
 
 end
 
+--给予初始武器
 function giveTheGuns(call)
     if call then
         for i = 1, 24 do
@@ -631,15 +617,17 @@ function Game.Rule:OnPlayerKilled(victim, killer)
             if vUser.renderFx == playerRenderFx.colorEx then
                 if vUser.zombieExclusiveSkill == 32 then
                     --鬼手
-                    kUser.static = true
-                    kUser.staticTime = gameTime + 3
+                    --kUser.static = true
+                    --kUser.staticTime = gameTime + 3
+                    kUser.Signal(SignalToUI.speedChangedGhostHand)
                 elseif vUser.zombieExclusiveSkill == 35 then
                     --震荡
                     killer:RemoveWeapon()
                 elseif vUser.zombieExclusiveSkill == 37 then
                     --冲击
-                    kUser.speedImpact = true
-                    kUser.speedImpactTime = gameTime + 8
+                    --kUser.speedImpact = true
+                    --kUser.speedImpactTime = gameTime + 8
+                    kUser.Signal(SignalToUI.speedChangedImpact)
                 elseif vUser.zombieExclusiveSkill == 38 then
                     --诱捕
                     killer.position = victim.position
@@ -1811,17 +1799,6 @@ function Game.Rule:OnPlayerSignal(player, signal)
         end
     end
 
-    --呼吸回血
-    if signal == SignalToGame.healthRecover then
-        if pUser.zombie and pUser.recover then
-            if player.health + 500 <= player.maxhealth then
-                player.health = player.health + 500
-            else
-                player.health = player.maxhealth
-            end
-        end
-    end
-
     --极速飞奔
     if signal == SignalToGame.sprint and pUser.sprint == true then
         if pUser.sprintCoolDownTime <= gameTime and pUser.sprinting == false then
@@ -1848,6 +1825,16 @@ function Game.Rule:OnPlayerSignal(player, signal)
             pUser.criticalDurationTime = gameTime + 10
             pUser.criticalCoolDownTime = gameTime + 60
         end
+    end
+
+    --冲击减速
+    if signal == SignalToGame.speedChangedImpact then
+        playerSpeedImpact(player)
+    end
+
+    --鬼手定身
+    if signal == SignalToGame.speedChangedGhostHand then
+        playerSpeedStatic(player)
     end
 
 end
