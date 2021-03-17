@@ -1,3 +1,4 @@
+print("导入common_ui.lua")
 --全局设置
 Common.UseWeaponInven(true) -- 使用武器背包
 Common.SetSaveCurrentWeapons(true) -- 保存当前装备的所有武器
@@ -32,7 +33,7 @@ function SetOption(weaponid, price, level, grade, red, green, blue)
     option = Common.GetWeaponOption(weaponid) -- 获取武器的选项
     -- 对武器选项option里面的属性进行修改
     -- (注意这里修改的是这一类的所有武器，例如修改了usp45的属性，那么所有人手上的usp45都有这个属性)
-    option.price = price -- 修改价格
+    option.price = price -- 修改购买这一类武器需要的价格
     option.damage = 1 -- 修正伤害(倍率，如果你后来又在Game.Weapon中修改了damage，那么这两个数值会进行乘法运算，数值越大，伤害越高)
     option.penetration = 1 -- 修正穿透能力(倍率，数值越大，穿透越强)
     option.rangemod = 1 -- 修正武器的距离修正(倍率，听起来好像有些拗口哈哈，我修正你的修正，距离修正表示子弹随着飞行距离伤害降低的程度，数值越大，就表示距离越远伤害越低，数值越小，就表示近距离和远距离伤害差距不大)
@@ -43,7 +44,7 @@ function SetOption(weaponid, price, level, grade, red, green, blue)
 
     -- option下面有一张user表，这张表里你可以随心所欲设定数值，但是具体这个数值怎么生效还是要看你的代码怎么用这个数值
     option.user.grade = grade -- 这里我根据官方案例声明了这个武器有一个等级限制，实际上这个等级限制根本没效果，但是我在game的代码里用到了这个声明，于是这个声明就生效了
-    option.user.level = level -- 同理，我声明这个武器本身有一个品质，品质表具体在data.lua的weaponLevel中可以看到
+    option.user.level = level -- 同理，我声明这个武器本身有一个品质，品质表具体在data.lua文件里的weaponLevel中可以看到
 
     if red ~= nil then
         --如果你传入了r g b的值，那么这里会设置武器使用开火射线以及射线的颜色(快去百度你最喜欢的颜色是怎样用rgb表示的吧)
@@ -60,6 +61,7 @@ end
 -- 注意：武器品质和武器解锁等级本身无效，需要后续写代码使用这两个属性才能生效，函数的每个参数隔开的逗号要用英文输入法，否则脚本编译会报错
 
 -- 手枪 pistol
+-- SetOption(武器的id, 武器购买的价格, 武器的品质, 武器解锁等级, 武器射线颜色rgb中的r值, 武器射线颜色rgb中的g值, 武器射线颜色rgb中的b值)
 SetOption(Common.WEAPON.DualBeretta, 0, weaponLevel.normal, 0, 80, 80, 80) -- 双枪(假深渊精英)
 SetOption(Common.WEAPON.FiveSeven, 0, weaponLevel.normal, 0, 80, 80, 80) -- 57式手枪
 SetOption(Common.WEAPON.Glock18C, 0, weaponLevel.normal, 0, 80, 80, 80) -- 格洛克18式手枪(传统竞技模式T阵营默认)

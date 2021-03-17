@@ -1,3 +1,4 @@
+print("导入data_typical.lua")
 -- 从game中发送的，将会被ui接受的信号 如果你有lua基础，你可以酌情修改，如果你没有lua基础，请尽量不要动下面这个表的内容
 SignalToGame = {
     modelRestore = 0, --模型复原

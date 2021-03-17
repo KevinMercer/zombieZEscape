@@ -1,3 +1,4 @@
+print("导入common_basic.lua")
 layerTable = {} --图层表
 
 Class = (function()

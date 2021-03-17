@@ -1,3 +1,4 @@
+print("导入ui_rule.lua")
 --屏幕分辨率
 screen = UI.ScreenSize()
 center = { x = screen.width / 2, y = screen.height / 2 }
@@ -1059,7 +1060,6 @@ function UI.Event:OnSignal(signal)
     --僵尸技能获得
     if signal >= SignalToUI.indurationSkillGet and signal <= SignalToUI.destructionSkillGet then
         --76
-        print(signal)
         yourZombieSkillTable[7] = zombieSkillTableToShow[signal - 76]
         drawSkillImageFunc(youAreZombie)
     end

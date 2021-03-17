@@ -1,19 +1,21 @@
 {
   "game": [
-    "common/fixedData.lua",
-    "common/data.lua",
-    "common/common-ui.lua",
-    "game/entityBlockList.lua",
-    "game/game.lua"
+    "common/data_typical.lua",
+    "common/data_custom.lua",
+    "common/common_ui.lua",
+    "common/common_basic.lua",
+    "game/game_block.lua",
+    "game/game_function.lua",
+    "game/game_rule.lua"
   ],
   "ui": [
-    "common/fixedData.lua",
-    "common/data.lua",
-    "common/common-ui.lua",
-    "ui/basic.lua",
-    "ui/image.lua",
-    "ui/uiGraphics.lua",
-    "ui/song.lua",
-    "ui/ui.lua"
+    "common/data_typical.lua",
+    "common/data_custom.lua",
+    "common/common_ui.lua",
+    "common/common_basic.lua",
+    "ui/ui_image.lua",
+    "ui/ui_graphics.lua",
+    "ui/ui_song.lua",
+    "ui/ui_rule.lua"
   ]
 }
