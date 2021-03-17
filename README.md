@@ -15,7 +15,7 @@ Now you can choose three kind of code.
 <b style="color: red">主版本是重要的版本分支且不推荐使用</b>
 <br />
 <h1>开发版本</h1>
-<b style="color: purple">开发版本机器不稳定，并且可能出现严重bug，不推荐使用</b>
+<b style="color: purple">开发版本极其不稳定，并且可能出现严重bug，不推荐使用</b>
 <br />
 <br />
 <h1>Stable Version</h1>
