@@ -4,7 +4,7 @@
 <br />
 <b style="font-size:20px;"><i><u>cso studio mode zombie Z escape lua script</u></i></b>
 
-当前现在可以选择三个代码版本
+当前可以选择三个代码版本
 <br />
 Now you can choose three kind of code.
 
